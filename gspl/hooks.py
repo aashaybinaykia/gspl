@@ -127,3 +127,14 @@ app_license = "GPL 3.0"
 # 	"Task": "gspl.task.get_dashboard_data"
 # }
 
+
+doc_events = {
+	"Product Bundle": {
+		"before_save": "gspl.doc_events.product_bundle.before_save",
+	},
+	"Purchase Receipt": {
+		"validate": "gspl.doc_events.purchase_receipt.validate",
+		"on_submit": "gspl.doc_events.purchase_receipt.on_submit",
+		"before_cancel": "gspl.doc_events.purchase_receipt.before_cancel",
+	},
+}
