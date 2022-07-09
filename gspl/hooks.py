@@ -127,6 +127,10 @@ app_license = "GPL 3.0"
 # 	"Task": "gspl.task.get_dashboard_data"
 # }
 
+fixtures = [
+	"Custom Field",
+	"Custom Script",
+]
 
 doc_events = {
 	"Product Bundle": {
