@@ -44,6 +44,8 @@ def create_product_bundles(doc):
                 item_name = product_bundle_id,
                 item_group = item_group,
                 is_stock_item = False,
+                has_batch_no = False,
+                # is_sales_item = True,
             )).insert()
 
         bundle = frappe.new_doc("Product Bundle")
