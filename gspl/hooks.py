@@ -127,11 +127,6 @@ app_license = "GPL 3.0"
 # 	"Task": "gspl.task.get_dashboard_data"
 # }
 
-fixtures = [
-	"Custom Field",
-	"Custom Script",
-]
-
 doc_events = {
 	"Product Bundle": {
 		"before_save": "gspl.doc_events.product_bundle.before_save",
@@ -140,5 +135,10 @@ doc_events = {
 		"validate": "gspl.doc_events.purchase_receipt.validate",
 		"on_submit": "gspl.doc_events.purchase_receipt.on_submit",
 		"before_cancel": "gspl.doc_events.purchase_receipt.before_cancel",
+	},
+	"Purchase Invoice": {
+		"validate": "gspl.doc_events.purchase_invoice.validate",
+		"on_submit": "gspl.doc_events.purchase_invoice.on_submit",
+		"before_cancel": "gspl.doc_events.purchase_invoice.before_cancel",
 	},
 }
