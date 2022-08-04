@@ -127,7 +127,30 @@ app_license = "GPL 3.0"
 # 	"Task": "gspl.task.get_dashboard_data"
 # }
 
+override_doctype_class = {
+    "Sales Invoice": "gspl.overrides.sales_invoice.CustomSalesInvoice"
+}
+
+
+# TODO: Uncomment and test below fixtures for TASK-17
+# fixtures = [
+# 	{
+# 		"dt": "Custom Field",
+# 		"filters": []
+# 	},
+# 	{
+# 		"dt": "Client Script",
+# 	},
+# 	{
+# 		"dt": "Property Setter",
+# 		"filters": [("doc_type", "=", "Product Bundle Item")]
+# 	}
+# ]
+
 doc_events = {
+	"Delivery Note": {
+		"validate": "gspl.doc_events.delivery_note.validate",
+	},
 	"Product Bundle": {
 		"before_save": "gspl.doc_events.product_bundle.before_save",
 	},
@@ -140,5 +163,9 @@ doc_events = {
 		"validate": "gspl.doc_events.purchase_invoice.validate",
 		"on_submit": "gspl.doc_events.purchase_invoice.on_submit",
 		"before_cancel": "gspl.doc_events.purchase_invoice.before_cancel",
+	},
+	"Sales Invoice": {
+		"on_submit": "gspl.doc_events.sales_invoice.on_submit",
+		"on_cancel": "gspl.doc_events.sales_invoice.on_cancel",
 	},
 }
