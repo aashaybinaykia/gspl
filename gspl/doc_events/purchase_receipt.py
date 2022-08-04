@@ -56,10 +56,6 @@ def create_product_bundles(doc):
             # Mark Batch as disabled
             frappe.db.set_value("Batch", row.batch_no, 'disabled', True)
 
-            # batch = frappe.get_doc("Batch", row.batch_no)
-            # batch.disabled = True
-            # batch.save()
-
             bundle.append('items', {
                 'item_code': row.item_code,
                 'qty': row.qty,
@@ -73,7 +69,7 @@ def create_product_bundles(doc):
 
 
 def delete_product_bundles(doc):
-    product_bundles = list(set([row.product_bundle_id for row in doc.items if row.product_bundle_id]))
+    product_bundles = list(set([row.product_bundle_id for row in doc.items if row.product_bundle_id and row.batch_no]))
     for bundle_item in product_bundles:
         bundle = frappe.get_doc("Product Bundle", bundle_item)
         bundle.delete()
