@@ -133,6 +133,7 @@ override_doctype_class = {
 
 
 # TODO: Uncomment and test below fixtures for TASK-17
+fixtures = ["Custom Field"]
 # fixtures = [
 # 	{
 # 		"dt": "Custom Field",
