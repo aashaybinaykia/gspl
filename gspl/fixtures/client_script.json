@@ -1,0 +1,15 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Product Bundle",
+  "enabled": 1,
+  "modified": "2022-09-25 11:26:37.504851",
+  "name": "Product Bundle-Form",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "script": "cur_frm.set_query('batch_no', 'items', function(frm, cdt, cdn) {\r\n    const row = locals[cdt][cdn];\r\n    if(!cur_frm.doc.warehouse) {\r\n        frappe.throw(__(\"Please select warehouse!\"))\r\n    }\r\n    if(!row.item_code) {\r\n        frappe.throw(__(\"Please select item code!\"))\r\n    }\r\n\r\n    return {\r\n        query: \"erpnext.controllers.queries.get_batch_no\",\r\n        filters: {\r\n            item_code: row.item_code,\r\n            warehouse: cur_frm.doc.warehouse,\r\n        },\r\n    }\r\n})\r\n\r\nfrappe.ui.form.on('Product Bundle', {\r\n    before_save: function(frm) {\r\n        frm.trigger('calculate_rate_and_qty')\r\n    },\r\n\r\n    calculate_qty_and_amt: function(frm) {\r\n        // Calculates 'Total Qty' and 'Total Amount'\r\n        let total_qty = frappe.utils.sum((frm.doc.items || []).map((d) => {return flt(d.qty)}));\r\n        let total_amount = frappe.utils.sum((frm.doc.items || []).map((d) => {return flt(d.rate) * flt(d.qty)}));\r\n\r\n        frm.set_value('total_qty', flt(total_qty))\r\n        frm.set_value('total_amount', flt(total_amount))\r\n    }\r\n})\r\n\r\n\r\nfrappe.ui.form.on('Product Bundle Item', {\r\n    qty: function(frm, cdt, cdn) {\r\n        frm.events.calculate_qty_and_amt(frm)\r\n    },\r\n\r\n    rate: function(frm, cdt, cdn) {\r\n        frm.events.calculate_qty_and_amt(frm)\r\n    }\r\n})",
+  "view": "Form"
+ }
+]
