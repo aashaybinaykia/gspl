@@ -6,5 +6,17 @@ frappe.ui.form.on('Product Bundle Transfer', {
 		if (frm.is_new()) {
 			frm.set_value('stock_entry', '')
 		}
-	}
+	},
+
+	from_warehouse: function(frm) {
+		$.each(frm.doc.items || [], function(idx, d) {
+			frappe.model.set_value(d.doctype, d.name, 'source_warehouse', frm.doc.from_warehouse);
+		})
+	},
+
+	to_warehouse: function(frm) {
+		$.each(frm.doc.items || [], function(idx, d) {
+			frappe.model.set_value(d.doctype, d.name, 'target_warehouse', frm.doc.to_warehouse);
+		})
+	},
 });

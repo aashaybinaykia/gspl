@@ -10,6 +10,10 @@
   "posting_time",
   "stock_entry",
   "section_break_4",
+  "from_warehouse",
+  "column_break_6",
+  "to_warehouse",
+  "section_break_8",
   "items",
   "amended_from"
  ],
@@ -54,12 +58,38 @@
    "options": "Product Bundle Transfer",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "description": "Sets 'Source Warehouse' in each row of the items table.",
+   "fieldname": "from_warehouse",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Default Source Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Sets 'Target Warehouse' in each row of the items table.",
+   "fieldname": "to_warehouse",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Default Target Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "section_break_8",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-07-31 16:30:55.555412",
+ "modified": "2022-09-28 16:34:32.318584",
  "modified_by": "Administrator",
  "module": "GSPL",
  "name": "Product Bundle Transfer",

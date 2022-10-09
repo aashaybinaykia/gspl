@@ -30,19 +30,23 @@ class ProductBundleTransfer(Document):
 					'batch_no': item.batch_no,
 				})
 
-			product_bundle.warehouse = row.target_warehouse
-			product_bundle.save()
-
+		se.product_bundle_transfer = self.name
 		se.save()
 		se.submit()
 
+		for row in self.items:
+			self.update_product_bundle_warehouse(row.product_bundle, row.target_warehouse)
+
 		self.stock_entry = se.name
 		self.save()
-
 
 	def cancel_stock_entry(self):
 		se = frappe.get_doc("Stock Entry", self.stock_entry)
 		se.cancel()
 
 		for row in self.items:
-			frappe.db.set_value("Product Bundle", row.product_bundle, 'warehouse', row.source_warehouse)
+			self.update_product_bundle_warehouse(row.product_bundle, row.source_warehouse)
+
+	def update_product_bundle_warehouse(self, product_bundle, warehouse):
+		""" Updates Product Bundle warehouse """
+		frappe.db.set_value("Product Bundle", product_bundle, 'warehouse', warehouse)
