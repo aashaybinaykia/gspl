@@ -169,4 +169,8 @@ doc_events = {
 		"on_submit": "gspl.doc_events.sales_invoice.on_submit",
 		"on_cancel": "gspl.doc_events.sales_invoice.on_cancel",
 	},
+	"Stock Entry": {
+		"before_submit": "gspl.doc_events.stock_entry.before_submit",
+		"before_cancel": "gspl.doc_events.stock_entry.before_cancel",
+	}
 }
