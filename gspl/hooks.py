@@ -180,5 +180,8 @@ doc_events = {
 	"Stock Entry": {
 		"before_submit": "gspl.doc_events.stock_entry.before_submit",
 		"before_cancel": "gspl.doc_events.stock_entry.before_cancel",
-	}
+	},
+	"Stock Ledger Entry": {
+		"validate": "gspl.doc_events.stock_ledger_entry.validate",
+	},
 }
