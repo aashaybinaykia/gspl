@@ -6,6 +6,11 @@ from frappe import _
 
 
 @frappe.whitelist()
+def validate(doc, method):
+    if not doc.is_return:
+        update_uom_conversion_factor_in_sales_order(doc)
+
+@frappe.whitelist()
 def on_submit(doc, method):
     if not doc.is_return:
         update_product_bundle(doc, "Sold")
@@ -18,6 +23,12 @@ def on_cancel(doc, method):
         update_product_bundle(doc, "Active")
     else:
         update_product_bundle(doc, "Sold")
+
+
+def update_uom_conversion_factor_in_sales_order(doc):
+    for row in doc.items:
+        if row.so_detail:
+            frappe.db.set_value("Sales Order Item", row.so_detail, 'conversion_factor', row.conversion_factor)
 
 
 def update_product_bundle(doc, status):

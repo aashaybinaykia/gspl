@@ -174,6 +174,7 @@ doc_events = {
 		"before_cancel": "gspl.doc_events.purchase_invoice.before_cancel",
 	},
 	"Sales Invoice": {
+		"validate": "gspl.doc_events.sales_invoice.validate",
 		"on_submit": "gspl.doc_events.sales_invoice.on_submit",
 		"on_cancel": "gspl.doc_events.sales_invoice.on_cancel",
 	},
