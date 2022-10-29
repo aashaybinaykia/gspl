@@ -9,8 +9,33 @@ from erpnext.stock.doctype.batch.batch import get_batch_qty
 
 @frappe.whitelist()
 def before_save(doc, method):
+    set_bundle_type(doc)
     calculate_rate_and_qty(doc)
     enable_disable_batch(doc)
+
+
+def set_bundle_type(doc):
+    item_templates = []
+    has_template = False
+    template_name = "mixed"
+
+    for row in doc.items:
+        item = frappe.get_doc("Item", row.item_code)
+
+        if item.variant_of:
+            if item.variant_of not in item_templates:
+                item_templates.append(item.variant_of)
+                has_template = True
+        else:
+            has_template = False
+            break
+
+
+    if has_template and len(item_templates) == 1:
+        template_name = item_templates[0]
+
+    doc.bundle_type = template_name
+
 
 def calculate_rate_and_qty(doc):
     total_qty = sum([row.qty for row in doc.items])
