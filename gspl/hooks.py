@@ -127,6 +127,11 @@ app_license = "GPL 3.0"
 # 	"Task": "gspl.task.get_dashboard_data"
 # }
 
+doctype_js = {
+	'Sales Order': 'public/js/sales_order.js',
+	'Sales Invoice': 'public/js/sales_invoice.js',
+}
+
 override_whitelisted_methods = {
 	"erpnext.selling.page.point_of_sale.point_of_sale.search_for_serial_or_batch_or_barcode_number": "gspl.overrides.whitelisted.point_of_sale.search_for_serial_or_batch_or_barcode_number",
 }

@@ -2701,5 +2701,39 @@
   "property_type": "Text",
   "row_name": null,
   "value": "SAL-ORD-.YYYY.-"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Sales Order Item",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "stock_uom_rate",
+  "modified": "2022-10-30 17:00:50.302574",
+  "name": "Sales Order Item-stock_uom_rate-read_only",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "read_only",
+  "property_type": "Check",
+  "row_name": null,
+  "value": "0"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Sales Invoice Item",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "stock_uom_rate",
+  "modified": "2022-10-30 17:16:22.061695",
+  "name": "Sales Invoice Item-stock_uom_rate-read_only",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "read_only",
+  "property_type": "Check",
+  "row_name": null,
+  "value": "0"
  }
 ]
