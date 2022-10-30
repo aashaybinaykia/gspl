@@ -128,6 +128,7 @@ app_license = "GPL 3.0"
 # }
 
 doctype_js = {
+	'Product Bundle': 'public/js/product_bundle.js',
 	'Sales Order': 'public/js/sales_order.js',
 	'Sales Invoice': 'public/js/sales_invoice.js',
 }
