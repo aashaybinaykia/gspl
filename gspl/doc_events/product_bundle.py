@@ -36,6 +36,14 @@ def set_bundle_type(doc):
 
     doc.bundle_type = template_name
 
+    # Updates "Product Bundle Item Template" table
+    doc.set('items_template', [])
+
+    for item_template in item_templates:
+        doc.append('item_templates', {
+            'item_template': item_template,
+        })
+
 
 def calculate_rate_and_qty(doc):
     total_qty = sum([row.qty for row in doc.items])
