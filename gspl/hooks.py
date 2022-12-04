@@ -128,6 +128,7 @@ app_license = "GPL 3.0"
 # }
 
 doctype_js = {
+	'Delivery Note': 'public/js/delivery_note.js',
 	'Product Bundle': 'public/js/product_bundle.js',
 	'Sales Order': 'public/js/sales_order.js',
 	'Sales Invoice': 'public/js/sales_invoice.js',
@@ -138,7 +139,8 @@ override_whitelisted_methods = {
 }
 
 override_doctype_class = {
-    "Sales Invoice": "gspl.overrides.sales_invoice.CustomSalesInvoice"
+    "Delivery Note": "gspl.overrides.delivery_note.CustomDeliveryNote",
+    "Sales Invoice": "gspl.overrides.sales_invoice.CustomSalesInvoice",
 }
 
 
