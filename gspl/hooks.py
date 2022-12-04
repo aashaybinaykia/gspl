@@ -132,6 +132,7 @@ doctype_js = {
 	'Product Bundle': 'public/js/product_bundle.js',
 	'Sales Order': 'public/js/sales_order.js',
 	'Sales Invoice': 'public/js/sales_invoice.js',
+	'Stock Entry': 'public/js/stock_entry.js',
 }
 
 override_whitelisted_methods = {
@@ -187,6 +188,7 @@ doc_events = {
 		"on_cancel": "gspl.doc_events.sales_invoice.on_cancel",
 	},
 	"Stock Entry": {
+		"before_save": "gspl.doc_events.stock_entry.before_save",
 		"before_submit": "gspl.doc_events.stock_entry.before_submit",
 		"before_cancel": "gspl.doc_events.stock_entry.before_cancel",
 	},

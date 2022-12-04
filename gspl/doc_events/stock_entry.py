@@ -4,6 +4,12 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 
+from erpnext.stock.doctype.batch.batch import get_batch_qty
+
+
+@frappe.whitelist()
+def before_save(doc, method):
+    set_items_qty_to_batch_qty(doc)
 
 @frappe.whitelist()
 def before_submit(doc, method):
@@ -14,6 +20,15 @@ def before_submit(doc, method):
 def before_cancel(doc, method):
     if not doc.product_bundle_transfer:
         validate_disabled_batch_before_cancel(doc)
+
+
+def set_items_qty_to_batch_qty(doc):
+    for row in doc.items:
+        if row.batch_no:
+            batch_qty = get_batch_qty(batch_no=row.batch_no, warehouse=row.s_warehouse, item_code=row.item_code)
+
+            if batch_qty:
+                row.qty = batch_qty
 
 
 def validate_disabled_batch(doc):
