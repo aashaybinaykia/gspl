@@ -3,13 +3,15 @@ from __future__ import unicode_literals
 
 import frappe
 from frappe import _
+from frappe.utils import flt
 
 from erpnext.stock.doctype.batch.batch import get_batch_qty
 
 
 @frappe.whitelist()
 def validate(doc, method):
-    validate_batch_qty(doc)
+    if doc.batch_no:
+        validate_batch_qty(doc)
 
 
 def validate_batch_qty(doc):
@@ -23,6 +25,7 @@ def validate_batch_qty(doc):
 
     batch_qty = get_batch_qty(batch_no=doc.batch_no, warehouse=doc.warehouse, item_code=doc.item_code)
 
-    if doc.actual_qty < batch_qty:
-        frappe.throw(
-            _("Cannot transfer partial quantity for Batch {}.").format(doc.batch_no))
+    if flt(batch_qty):
+        if flt(abs(doc.actual_qty)) != flt(batch_qty):
+            frappe.throw(
+                _("Cannot transfer partial quantity {} for Batch {} (Batch qty: {}).").format(doc.actual_qty, doc.batch_no, batch_qty))
