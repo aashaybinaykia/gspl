@@ -168,6 +168,10 @@ doc_events = {
 	},
 	"Delivery Note": {
 		"validate": "gspl.doc_events.delivery_note.validate",
+		"before_save": "gspl.doc_events.delivery_note.before_save",
+	},
+	"Item": {
+		"before_validate": "gspl.doc_events.item.before_validate",
 	},
 	"Product Bundle": {
 		"before_save": "gspl.doc_events.product_bundle.before_save",
@@ -184,6 +188,7 @@ doc_events = {
 	},
 	"Sales Invoice": {
 		"validate": "gspl.doc_events.sales_invoice.validate",
+		"before_save": "gspl.doc_events.sales_invoice.before_save",
 		"on_submit": "gspl.doc_events.sales_invoice.on_submit",
 		"on_cancel": "gspl.doc_events.sales_invoice.on_cancel",
 	},
