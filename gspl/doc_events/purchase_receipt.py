@@ -45,6 +45,7 @@ def create_product_bundles(doc):
                 item_group = item_group,
                 is_stock_item = False,
                 has_batch_no = False,
+                stock_uom = "Nos",
                 # is_sales_item = True,
             )).insert()
 
