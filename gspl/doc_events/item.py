@@ -16,12 +16,12 @@ def set_default_item_attributes(doc):
     """
 
     if doc.is_new() and doc.has_variants and doc.variant_based_on == "Item Attribute":
-        if frappe.db.exists("Item Attribute", "Category"):
-            doc.append("attributes", {
-                "attribute": "Category"
-            })
+        item_attributes = list(map(lambda d: d.attribute, doc.attributes))
 
-        if frappe.db.exists("Item Attribute", "Shade"):
-            doc.append("attributes", {
-                "attribute": "Shade"
-            })
+        attributes_to_add = ["Shade", "Category"]
+        for attribute in attributes_to_add:
+            if frappe.db.exists("Item Attribute", attribute):
+                if attribute not in item_attributes:
+                    doc.append("attributes", {
+                        "attribute": attribute
+                    })
