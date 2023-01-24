@@ -1,0 +1,33 @@
+{
+ "add_total_row": 0,
+ "columns": [],
+ "creation": "2023-01-19 11:31:28.751205",
+ "disable_prepared_report": 0,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "json": "{\"filters\":[],\"fields\":[[\"item_template\",\"Product Bundle Item Template\"],[\"bundle_type\",\"Product Bundle\"],[\"name\",\"Product Bundle\"],[\"status\",\"Product Bundle\"],[\"contents\",\"Product Bundle\"],[\"warehouse\",\"Product Bundle\"],[\"rack\",\"Product Bundle\"]],\"order_by\":\"`tabProduct Bundle`.`modified` asc\",\"add_totals_row\":0,\"page_length\":20,\"column_widths\":{\"Product Bundle Item Template:item_template\":120,\"bundle_type\":120,\"name\":120,\"status\":120,\"contents\":120,\"warehouse\":120,\"rack\":120},\"group_by\":null}",
+ "modified": "2023-01-19 11:37:19.769565",
+ "modified_by": "Administrator",
+ "module": "GSPL",
+ "name": "Find Bundle",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Product Bundle",
+ "report_name": "Find Bundle",
+ "report_type": "Report Builder",
+ "roles": [
+  {
+   "role": "Stock Manager"
+  },
+  {
+   "role": "Stock User"
+  },
+  {
+   "role": "Sales User"
+  }
+ ]
+}
