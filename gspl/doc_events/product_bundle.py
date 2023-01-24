@@ -37,7 +37,7 @@ def set_bundle_type(doc):
     doc.bundle_type = template_name
 
     # Updates "Product Bundle Item Template" table
-    doc.set('items_template', [])
+    doc.set('item_templates', [])
 
     for item_template in item_templates:
         doc.append('item_templates', {
