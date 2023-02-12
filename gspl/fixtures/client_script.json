@@ -1,1 +1,15 @@
-[]
+[
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Sales Order",
+  "enabled": 1,
+  "modified": "2023-01-31 17:46:14.428222",
+  "name": "Sales Order-Form",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "script": "frappe.ui.form.on('Sales Order', {\n\tcustomer(frm) {\n        console.log(frm.doc.customer_address)\n        frappe.model.set_value(frm.doctype, frm.name, \"shipping_address_name\", frm.doc.customer_address);\n            }\n})",
+  "view": "Form"
+ }
+]
