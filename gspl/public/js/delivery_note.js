@@ -1,5 +1,13 @@
 // Delivery Note
 
+erpnext.stock.DeliveryNoteController = erpnext.stock.DeliveryNoteController.extend({
+    selling_price_list() {
+        console.log('overrided');
+    }
+})
+
+$.extend(cur_frm.cscript, new erpnext.stock.DeliveryNoteController({frm: cur_frm}));
+
 frappe.ui.form.on('Delivery Note', {
     /*onload: function(frm){
         console.log(frm.doc)
