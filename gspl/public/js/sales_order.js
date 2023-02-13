@@ -22,6 +22,14 @@
 // 	}
 // }
 
+erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend({
+    selling_price_list() {
+        console.log('overrided');
+    }
+})
+
+$.extend(cur_frm.cscript, new erpnext.selling.SalesOrderController({frm: cur_frm}));
+
 frappe.ui.form.on('Sales Order', {
     timeline_refresh: function(frm){
         frm.doc.ignore_pricing_rule = false
