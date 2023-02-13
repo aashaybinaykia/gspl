@@ -3,29 +3,35 @@ from __future__ import unicode_literals
 
 import frappe
 from frappe import _
-
+from frappe.utils import cint
 from erpnext.stock.doctype.batch.batch import get_batch_qty
+from frappe.utils import cint, flt
 
+from erpnext.stock.doctype.delivery_note.delivery_note import DeliveryNote
+
+from frappe.utils import logger
+
+frappe.utils.logger.set_log_level("DEBUG")
+logger = frappe.logger("api", allow_site=True, file_count=50)
 
 @frappe.whitelist()
-def validate(doc, method):
-    update_packing_list(doc)
+def on_submit(doc, method):
+    if not doc.is_return:
+        update_product_bundle(doc, "Sold")
+    else:
+        update_product_bundle(doc, "Active")
 
 @frappe.whitelist()
-def before_save(doc, method):
-    set_uom_conversion_factor_to_batch_qty(doc)
+def on_cancel(doc, method):
+    if not doc.is_return:
+        update_product_bundle(doc, "Active")
+    else:
+        update_product_bundle(doc, "Sold")
 
 
-def update_packing_list(doc):
-    for packed_item in doc.packed_items:
-        product_bundle_item = frappe.get_doc("Product Bundle Item", {'parent': packed_item.parent_item, 'item_code': packed_item.item_code})
-        packed_item.batch_no = product_bundle_item.batch_no
+def update_product_bundle(doc, status):
+    from erpnext.stock.doctype.packed_item.packed_item import is_product_bundle
 
-
-def set_uom_conversion_factor_to_batch_qty(doc):
     for row in doc.items:
-        if row.batch_no:
-            batch_qty = get_batch_qty(batch_no=row.batch_no, warehouse=row.warehouse, item_code=row.item_code)
-
-            if batch_qty:
-                row.conversion_factor = batch_qty
+        if is_product_bundle(row.product_bundle):
+            frappe.db.set_value("Product Bundle", row.item_code, "status", status)

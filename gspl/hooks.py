@@ -137,6 +137,7 @@ doctype_js = {
 
 override_whitelisted_methods = {
 	"erpnext.selling.page.point_of_sale.point_of_sale.search_for_serial_or_batch_or_barcode_number": "gspl.overrides.whitelisted.point_of_sale.search_for_serial_or_batch_or_barcode_number",
+	"erpnext.stock.doctype.batch.batch.get_batch_no": "gspl.overrides.whitelisted.batch.custom_get_batch_no",
 }
 
 override_doctype_class = {
@@ -162,13 +163,13 @@ fixtures = ["Custom Field", "Property Setter", "Client Script"]
 # ]
 
 doc_events = {
-	"Batch": {
-		"after_insert": "gspl.doc_events.batch.after_insert",
-		"on_trash": "gspl.doc_events.batch.on_trash",
-	},
-	"Delivery Note": {
-		"validate": "gspl.doc_events.delivery_note.validate",
-		"before_save": "gspl.doc_events.delivery_note.before_save",
+	# "Batch": {
+	# 	"after_insert": "gspl.doc_events.batch.after_insert",
+	# 	"on_trash": "gspl.doc_events.batch.on_trash",
+	# },
+    "Delivery Note": {
+		"on_submit": "gspl.doc_events.delivery_note.on_submit",
+		"on_cancel": "gspl.doc_events.delivery_note.on_cancel",
 	},
 	"Item": {
 		"before_validate": "gspl.doc_events.item.before_validate",
@@ -189,12 +190,12 @@ doc_events = {
 	# "Sales Order": {
 	# 	"before_save": "gspl.doc_events.sales_order.before_save",
 	# },
-	"Sales Invoice": {
-		"validate": "gspl.doc_events.sales_invoice.validate",
-		"before_save": "gspl.doc_events.sales_invoice.before_save",
-		"on_submit": "gspl.doc_events.sales_invoice.on_submit",
-		"on_cancel": "gspl.doc_events.sales_invoice.on_cancel",
-	},
+	# "Sales Invoice": {
+	# 	"validate": "gspl.doc_events.sales_invoice.validate",
+	# 	"before_save": "gspl.doc_events.sales_invoice.before_save",
+	# 	"on_submit": "gspl.doc_events.sales_invoice.on_submit",
+	# 	"on_cancel": "gspl.doc_events.sales_invoice.on_cancel",
+	# },
 	"Stock Entry": {
 		"before_save": "gspl.doc_events.stock_entry.before_save",
 		"before_submit": "gspl.doc_events.stock_entry.before_submit",

@@ -35,17 +35,18 @@ def create_product_bundles(doc):
     product_bundles = {}
     for row in doc.items:
         if row.product_bundle_id and row.batch_no and not row.purchase_receipt:
-            key = (row.product_bundle_id, row.item_group, row.warehouse)
+            key = (row.product_bundle_id, 'Bundles', row.warehouse, row.brand)
             product_bundles.setdefault(key, [])
             product_bundles[key].append(row)
 
 
-    for (product_bundle_id, item_group, warehouse), items in product_bundles.items():
+    for (product_bundle_id, item_group, warehouse, brand), items in product_bundles.items():
         item = frappe.get_doc(dict(
                 doctype = "Item",
                 item_code = product_bundle_id,
                 item_name = product_bundle_id,
                 item_group = item_group,
+                brand = brand,
                 is_stock_item = False,
                 has_batch_no = False,
                 stock_uom = "Nos",
@@ -66,7 +67,8 @@ def create_product_bundles(doc):
                 'description': row.description,
                 'rate': row.rate,
                 'uom': row.uom,
-                'batch_no': row.batch_no
+                'batch_no': row.batch_no,
+                'brand': row.brand
             })
 
         bundle.save()

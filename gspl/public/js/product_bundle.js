@@ -42,5 +42,54 @@ frappe.ui.form.on('Product Bundle Item', {
 
     rate: function(frm, cdt, cdn) {
         frm.events.calculate_qty_and_amt(frm)
+    },
+    
+    items_remove: function(frm, cdt, cdn){
+        console.log(frm)
+        console.log(cdt)
+        console.log(cdn)
+
+    },
+    batch_no: async function(frm, cdt, cdn) {
+        const row = locals[cdt][cdn];
+
+        if (row.batch_no){
+            await frappe.call({
+                method: 'erpnext.stock.doctype.batch.batch.get_batch_qty',
+                args: {
+                    item_code: row.item_code,
+                    warehouse: frm.doc.warehouse,
+                    batch_no: row.batch_no, 
+                },
+                callback: (r) => {
+                    if(!r.message) {
+                        return;
+                    }
+                    console.log(r)
+                    let qty = r.message;
+                    console.log(qty)
+                    frappe.model.set_value(cdt, cdn, "qty", qty);
+                    
+                }
+            })
+
+            await frappe.call({
+                method: 'frappe.client.get_value',
+                args: {
+                    doctype: 'Stock Ledger Entry',
+                    filters: {
+                        'item_code': frm.doc.item_consumed,
+                        'is_cancelled': 0
+                    },
+                    fieldname: ['valuation_rate']
+                },
+                callback: function(data) {
+                    //console.log(data.message);
+                    frappe.model.set_value(cdt, cdn, "rate", data.message.valuation_rate);
+                }
+    
+            });
+            
+        }
     }
 })
