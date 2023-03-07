@@ -14,12 +14,15 @@ def before_save(doc, method):
 @frappe.whitelist()
 def before_submit(doc, method):
     if not doc.product_bundle_transfer:
-        validate_disabled_batch(doc)
+        #validate_disabled_batch(doc)
+        a=1
+
 
 @frappe.whitelist()
 def before_cancel(doc, method):
     if not doc.product_bundle_transfer:
-        validate_disabled_batch_before_cancel(doc)
+        #validate_disabled_batch_before_cancel(doc)
+        a=1
 
 
 def set_items_qty_to_batch_qty(doc):

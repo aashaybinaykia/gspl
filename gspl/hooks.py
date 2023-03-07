@@ -124,7 +124,7 @@ app_license = "GPL 3.0"
 # generated from the base implementation of the doctype dashboard,
 # along with any modifications made in other Frappe apps
 # override_doctype_dashboards = {
-# 	"Task": "gspl.task.get_dashboard_data"
+# 	"Task": "gspl.task.get_dashboard_data
 # }
 
 doctype_js = {
@@ -138,6 +138,8 @@ doctype_js = {
 override_whitelisted_methods = {
 	"erpnext.selling.page.point_of_sale.point_of_sale.search_for_serial_or_batch_or_barcode_number": "gspl.overrides.whitelisted.point_of_sale.search_for_serial_or_batch_or_barcode_number",
 	"erpnext.stock.doctype.batch.batch.get_batch_no": "gspl.overrides.whitelisted.batch.custom_get_batch_no",
+	"erpnext.controllers.item_variant.create_variant":"gspl.overrides.whitelisted.item_variant.create_variant_override",
+	"erpnext.controllers.item_variant.enqueue_multiple_variant_creation":"gspl.overrides.whitelisted.item_variant.enqueue_multiple_variant_creation_override",
 }
 
 override_doctype_class = {
@@ -170,6 +172,7 @@ doc_events = {
     "Delivery Note": {
 		"on_submit": "gspl.doc_events.delivery_note.on_submit",
 		"on_cancel": "gspl.doc_events.delivery_note.on_cancel",
+		"validate": "gspl.doc_events.delivery_note.validate",
 	},
 	"Item": {
 		"before_validate": "gspl.doc_events.item.before_validate",

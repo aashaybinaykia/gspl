@@ -56,16 +56,16 @@ def calculate_rate_and_qty(doc):
 
 def enable_disable_batch(doc):
     if doc.enabled:
-        # for row in doc.items:
-        #     batch_qty = get_batch_qty(batch_no=row.batch_no, warehouse=doc.warehouse, item_code=row.item_code)
+        for row in doc.items:
+            batch_qty = get_batch_qty(batch_no=row.batch_no, warehouse=doc.warehouse, item_code=row.item_code)
 
-        #     if batch_qty < row.qty:
-        #         frappe.throw(_(
-        #             "Row #%s: Cannot enable Product Bundle because Batch %s does not have enough stock." % (
-        #                 row.idx, row.batch_no,)))
+            if batch_qty != row.qty:
+                frappe.throw(_(
+                    "Row #%s: Cannot enable Product Bundle because Batch %s does not have enough stock." % (
+                        row.idx, row.batch_no,)))
 
-        #     else:
-        #         frappe.db.set_value("Batch", row.batch_no, 'disabled', True)
+            else:
+                frappe.db.set_value("Batch", row.batch_no, 'disabled', True)
 
         frappe.db.set_value("Item", doc.new_item_code, 'is_sales_item', True)
         doc.status = "Active"

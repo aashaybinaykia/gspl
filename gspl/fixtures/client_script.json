@@ -11,5 +11,18 @@
   "parenttype": null,
   "script": "frappe.ui.form.on('Sales Order', {\n\tcustomer(frm) {\n        console.log(frm.doc.customer_address)\n        frappe.model.set_value(frm.doctype, frm.name, \"shipping_address_name\", frm.doc.customer_address);\n            }\n})",
   "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Customer",
+  "enabled": 1,
+  "modified": "2023-02-26 12:48:59.102627",
+  "name": "Customer-Form",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "script": "frappe.ui.form.on('Customer', {\n    onload(frm) {\n\n        frm.set_query('default_transporter', function() {\n        \treturn {\n        \t\tfilters: {\n        \t\t\t'is_transporter': 1\n        \t\t}\n        \t}\n        });        \n        \n    },\n\trefresh(frm) {\n\t\t// your code here\n\t},\n\t\n\n\n\n})\n\n",
+  "view": "Form"
  }
 ]

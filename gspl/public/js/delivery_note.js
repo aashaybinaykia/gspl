@@ -28,6 +28,28 @@ frappe.ui.form.on('Delivery Note', {
     onload: function(frm){
         //var addITem
     },
+
+    customer: function(frm){
+        frappe.call({
+            method: 'frappe.client.get_value',
+            args: {
+                'doctype': 'Customer',
+                'filters': {'name': frm.doc.customer},
+                'fieldname': 'default_transporter'
+            },
+            callback: (r) => {
+                if(r.message.default_transporter){
+                    frm.set_value('transporter',r.message.default_transporter);
+                    frm.script_manager.trigger('transporter')
+                }
+                else{
+                    frm.set_value('transporter',"");
+                    frm.refresh_field('transporter')
+
+                }
+            }
+        })
+    },
     
     validate: async function(frm) {
         console.log(frm)
@@ -107,9 +129,6 @@ frappe.ui.form.on('Delivery Note', {
     //         }
     //     })
     // },
-    selling_price_list: function(frm){
-        return;
-    },
 
     add_batch: async function(frm) {
         console.log(frm.doc)
@@ -365,6 +384,7 @@ frappe.ui.form.on('Delivery Note Item', {
         console.log(cdn)
         const row = locals[cdt][cdn];
         frappe.model.set_value(row.doctype, row.name, "price_list", frm.doc.selling_price_list);
+        console.log(frm.doc.items)
 
     },
     
@@ -384,24 +404,33 @@ frappe.ui.form.on('Delivery Note Item', {
 
         if (row.batch_no){
             await frappe.call({
-                method: 'erpnext.stock.doctype.batch.batch.get_batch_qty',
+                method: 'frappe.client.get_value',
                 args: {
-                    item_code: row.item_code,
-                    warehouse: row.warehouse,
-                    batch_no: row.batch_no, 
+                    doctype: 'Batch',
+                    filters: {
+                        'name': row.batch_no,
+                    },
+                    fieldname: ['batch_qty','disabled']
                 },
-                callback: (r) => {
+                callback: function(r) {
                     if(!r.message) {
                         return;
                     }
-                    let qty = r.message;
-                    frappe.model.set_value(cdt, cdn, "qty", qty);
+                    if(r.message.disabled == 1){
+                        if (row.product_bundle == "" || row.product_bundle == undefined){
+                            frappe.msgprint({
+                                title: __('Error'),
+                                message:__('Row Removed Because Disabled Item Selected Without Product Bundle'),
+                                indicator:'red'
+                            });
+                            frm.doc.items.splice(row.idx-1,1)
+                            frm.refresh_field('items')
+                            return
 
-                    /*if (qty) {
-                        setTimeout(() => {
-                            frappe.model.set_value(cdt, cdn, "qty", qty);
-                        }, 2000);
-                    }*/
+                        }
+                    }
+                    let qty = r.message.batch_qty;
+                    frappe.model.set_value(cdt, cdn, "qty", qty);
                 }
             })
         }

@@ -12,6 +12,7 @@ from erpnext.stock.doctype.batch.batch import get_batch_qty
 def validate(doc, method):
     if doc.batch_no:
         validate_batch_qty(doc)
+        
 
 
 def validate_batch_qty(doc):

@@ -35,7 +35,7 @@ def create_product_bundles(doc):
     product_bundles = {}
     for row in doc.items:
         if row.product_bundle_id and row.batch_no and not row.purchase_receipt:
-            key = (row.product_bundle_id, 'Bundles', row.warehouse, row.brand)
+            key = (row.product_bundle_id, row.item_group, row.warehouse, row.brand)
             product_bundles.setdefault(key, [])
             product_bundles[key].append(row)
 
