@@ -73,7 +73,7 @@
    "fieldname": "items",
    "fieldtype": "Table",
    "label": "Items",
-   "options": "Case Transfer Item",
+   "options": "Case Detail Transfer Item",
    "reqd": 1
   },
   {
@@ -81,7 +81,7 @@
    "fieldtype": "Link",
    "label": "Amended From",
    "no_copy": 1,
-   "options": "Case Transfer",
+   "options": "Case Detail Transfer",
    "print_hide": 1,
    "read_only": 1
   }
@@ -89,10 +89,10 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-03-07 15:38:40.054537",
+ "modified": "2023-03-09 18:30:00.824296",
  "modified_by": "Administrator",
  "module": "GSPL",
- "name": "Case Transfer",
+ "name": "Case Detail Transfer",
  "owner": "Administrator",
  "permissions": [
   {

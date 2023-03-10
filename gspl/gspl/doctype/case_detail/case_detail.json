@@ -1,7 +1,8 @@
 {
  "actions": [],
  "allow_import": 1,
- "creation": "2023-03-07 15:29:02.531225",
+ "autoname": "field:new_item_code",
+ "creation": "2023-03-09 18:26:37.102490",
  "description": "Aggregate group of **Items** into another **Item**. This is useful if you are bundling a certain **Items** into a package and you maintain stock of the packed **Items** and not the aggregate **Item**. \n\nThe package **Item** will have \"Is Stock Item\" as \"No\" and \"Is Sales Item\" as \"Yes\".\n\nFor Example: If you are selling Laptops and Backpacks separately and have a special price if the customer buys both, then the Laptop + Backpack will be a new Product Bundle Item.\n\nNote: BOM = Bill of Materials",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -18,7 +19,8 @@
   "enabled",
   "item_section",
   "items",
-  "section_break_13",
+  "section_break_4",
+  "item_templates",
   "total_qty",
   "total_amount"
  ],
@@ -36,7 +38,8 @@
    "no_copy": 1,
    "oldfieldname": "new_item_code",
    "oldfieldtype": "Data",
-   "reqd": 1
+   "reqd": 1,
+   "unique": 1
   },
   {
    "fieldname": "description",
@@ -48,7 +51,6 @@
    "fieldname": "warehouse",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "in_standard_filter": 1,
    "label": "Warehouse",
    "options": "Warehouse",
    "reqd": 1
@@ -66,37 +68,30 @@
   {
    "fieldname": "status",
    "fieldtype": "Select",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
    "label": "Status",
    "options": "Active\nDisabled\nSold",
-   "read_only": 1,
-   "reqd": 1
+   "read_only": 1
   },
   {
    "fieldname": "bundle_type",
    "fieldtype": "Data",
-   "in_global_search": 1,
    "in_list_view": 1,
    "label": "Bundle Type",
-   "read_only": 1,
-   "reqd": 1
+   "read_only": 1
   },
   {
    "fieldname": "contents",
    "fieldtype": "Select",
    "in_list_view": 1,
-   "in_standard_filter": 1,
    "label": "Contents",
    "options": "Thaan\nShort Length\nPiece\nCombi",
-   "reqd": 1
+   "read_only": 1
   },
   {
    "default": "1",
    "fieldname": "enabled",
    "fieldtype": "Check",
-   "label": "Enabled",
-   "reqd": 1
+   "label": "Enabled"
   },
   {
    "description": "List items that form the package.",
@@ -110,34 +105,36 @@
    "label": "Items",
    "oldfieldname": "sales_bom_items",
    "oldfieldtype": "Table",
-   "options": "Product Bundle Item",
+   "options": "Case Detail Item",
    "reqd": 1
   },
   {
-   "fieldname": "section_break_13",
+   "fieldname": "section_break_4",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "item_templates",
+   "fieldtype": "Table",
+   "label": "Item Templates",
+   "options": "Case Detail Item Template"
   },
   {
    "fieldname": "total_qty",
    "fieldtype": "Float",
-   "label": "Total Qty",
-   "read_only": 1,
-   "reqd": 1
+   "label": "Total Qty"
   },
   {
    "fieldname": "total_amount",
    "fieldtype": "Currency",
-   "label": "Total Amount",
-   "read_only": 1,
-   "reqd": 1
+   "label": "Total Amount"
   }
  ],
  "icon": "fa fa-sitemap",
  "links": [],
- "modified": "2023-03-07 15:33:12.675081",
+ "modified": "2023-03-10 10:18:40.093784",
  "modified_by": "Administrator",
  "module": "GSPL",
- "name": "Case Details",
+ "name": "Case Detail",
  "owner": "Administrator",
  "permissions": [
   {

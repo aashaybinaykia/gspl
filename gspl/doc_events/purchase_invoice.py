@@ -8,76 +8,84 @@ from frappe import _
 @frappe.whitelist()
 def validate(doc, method):
     if doc.update_stock:
-        validate_if_product_bundle_exists(doc)
+        validate_if_case_details_exists(doc)
 
 @frappe.whitelist()
 def on_submit(doc, method):
     if doc.update_stock:
-        create_product_bundles(doc)
+        create_case_details(doc)
 
 @frappe.whitelist()
 def before_cancel(doc, method):
     if doc.update_stock:
-        delete_product_bundles(doc)
+        delete_case_details(doc)
 
 
-def validate_if_product_bundle_exists(doc):    
+def validate_if_case_details_exists(doc):    
     for row in doc.items:
-        if row.product_bundle_id and not row.purchase_receipt:
-            if frappe.db.exists("Product Bundle", row.product_bundle_id):
+        if row.case_number and not row.purchase_receipt:
+            if frappe.db.exists("Case Detail", row.case_number):
                 frappe.throw(_(
-                    "Row #%s: Product Bundle %s already exists for item %s. " 
-                    "Please use different Product Bundle ID" % (
-                        row.idx, row.product_bundle_id, row.item_name,)))
+                    "Row #%s: Case %s already exists for item %s. " 
+                    "Please use different Case ID" % (
+                        row.idx, row.case_number, row.item_name,)))
 
 
-def create_product_bundles(doc):
-    product_bundles = {}
+def create_case_details(doc):
+    case_detail = {}
     for row in doc.items:
-        if row.product_bundle_id and row.batch_no and not row.purchase_receipt:
-            key = (row.product_bundle_id, row.item_group, row.warehouse, row.brand)
-            product_bundles.setdefault(key, [])
-            product_bundles[key].append(row)
+        if row.case_number and not row.purchase_receipt:
+            key = (row.case_number, row.warehouse)
+            case_detail.setdefault(key, [])
+            case_detail[key].append(row)
 
 
-    for (product_bundle_id, item_group, warehouse, brand), items in product_bundles.items():
-        item = frappe.get_doc(dict(
-                doctype = "Item",
-                item_code = product_bundle_id,
-                item_name = product_bundle_id,
-                item_group = item_group,
-                brand = brand,
-                is_stock_item = False,
-                has_batch_no = False,
-                stock_uom = "Nos",
-                # is_sales_item = True,
-            )).insert()
+    for (case_number, warehouse), items in case_detail.items():
+        # item = frappe.get_doc(dict(
+        #         doctype = "Item",
+        #         item_code = product_bundle_id,
+        #         item_name = product_bundle_id,
+        #         item_group = item_group,
+        #         brand = brand,
+        #         is_stock_item = False,
+        #         has_batch_no = False,
+        #         stock_uom = "Nos",
+        #         # is_sales_item = True,
+        #     )).insert()
 
-        bundle = frappe.new_doc("Product Bundle")
-        bundle.new_item_code = item.name
-        bundle.warehouse = warehouse
+        # case = frappe.get_doc(dict(
+        #         doctype = "Case Detail",
+        #         new_item_code = case_number,
+        #         warehouse = warehouse
+        #     )).insert()
+        # last_case = frappe.get_last_doc("Case Detail")
+        # frappe.throw(_(
+        #     "Row #%s: Case %s already exists for item %s. " 
+        #     "Please use different Case ID" % (
+        #         last_case, row.case_number, row.item_name,)))
+        case = frappe.new_doc("Case Detail")
+        case.new_item_code = case_number
+        case.warehouse = warehouse
 
         for row in items:
             # Mark Batch as disabled
-            frappe.db.set_value("Batch", row.batch_no, 'disabled', True)
+            # frappe.db.set_value("Batch", row.batch_no, 'disabled', True)
 
-            bundle.append('items', {
+            case.append('items', {
                 'item_code': row.item_code,
                 'qty': row.qty,
                 'description': row.description,
                 'rate': row.rate,
                 'uom': row.uom,
                 'batch_no': row.batch_no,
-                'brand': row.brand
+                # 'brand': row.brand
             })
 
-        bundle.save()
+        case.save()
 
 
-def delete_product_bundles(doc):
-    product_bundles = list(set([row.product_bundle_id for row in doc.items if row.product_bundle_id and row.batch_no and not row.purchase_receipt]))
-    for bundle_item in product_bundles:
-        bundle = frappe.get_doc("Product Bundle", bundle_item)
-        bundle.delete()
-        item = frappe.get_doc("Item", bundle_item)
-        item.delete()
+def delete_case_details(doc):
+    cases = list(set([row.case_number for row in doc.items if row.case_number and not row.purchase_receipt]))
+    for case_number in cases:
+        case = frappe.get_doc("Case Detail", case_number)
+        case.delete()

@@ -4,5 +4,5 @@
 # import frappe
 import unittest
 
-class TestCaseTransfer(unittest.TestCase):
+class TestCaseDetail(unittest.TestCase):
 	pass

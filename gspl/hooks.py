@@ -129,7 +129,7 @@ app_license = "GPL 3.0"
 
 doctype_js = {
 	'Delivery Note': 'public/js/delivery_note.js',
-	'Product Bundle': 'public/js/product_bundle.js',
+	'Case Detail': 'public/js/case_detail.js',
 	'Sales Order': 'public/js/sales_order.js',
 	'Sales Invoice': 'public/js/sales_invoice.js',
 	'Stock Entry': 'public/js/stock_entry.js',
@@ -143,7 +143,6 @@ override_whitelisted_methods = {
 }
 
 override_doctype_class = {
-    "Delivery Note": "gspl.overrides.delivery_note.CustomDeliveryNote",
     "Sales Invoice": "gspl.overrides.sales_invoice.CustomSalesInvoice",
 }
 
@@ -177,13 +176,8 @@ doc_events = {
 	"Item": {
 		"before_validate": "gspl.doc_events.item.before_validate",
 	},
-	"Product Bundle": {
-		"before_save": "gspl.doc_events.product_bundle.before_save",
-	},
-	"Purchase Receipt": {
-		"validate": "gspl.doc_events.purchase_receipt.validate",
-		"on_submit": "gspl.doc_events.purchase_receipt.on_submit",
-		"before_cancel": "gspl.doc_events.purchase_receipt.before_cancel",
+	"Case Detail": {
+		"before_save": "gspl.doc_events.case_detail.before_save",
 	},
 	"Purchase Invoice": {
 		"validate": "gspl.doc_events.purchase_invoice.validate",
@@ -206,5 +200,6 @@ doc_events = {
 	},
 	"Stock Ledger Entry": {
 		"validate": "gspl.doc_events.stock_ledger_entry.validate",
+        "on_submit": "gspl.doc_events.stock_ledger_entry.on_submit",
 	},
 }

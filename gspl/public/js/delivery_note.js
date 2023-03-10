@@ -28,7 +28,9 @@ frappe.ui.form.on('Delivery Note', {
     onload: function(frm){
         //var addITem
     },
-
+    on_submit: function(frm){
+        console.log(frm.doc.case_details)
+    },
     customer: function(frm){
         frappe.call({
             method: 'frappe.client.get_value',
@@ -163,11 +165,11 @@ frappe.ui.form.on('Delivery Note', {
                             //frm.doc.addItem = item
                             item.batch_no = data.message.name
                             item.qty = data.message.batch_qty
-                            if(frm.doc.add_bundle_batches !== undefined) item.product_bundle = frm.doc.add_bundle_batches //if called from add bundle batches
+                            if(frm.doc.add_case_batch !== undefined) item.case_detail = frm.doc.add_case_batch //if called from add bundle batches
                             frm.refresh_field('items')
                         }
                         else{
-                            var addItem = frm.doc.items.find(element => element.product_bundle == frm.doc.add_bundle_batches )
+                            var addItem = frm.doc.items.find(element => element.case_detail == frm.doc.add_case_batch )
                             if(!addItem || frm.doc.items.find(element => element.batch_no == data.message.name)){//if an item from the bundle does not exist, incase it exists, it is not the same item as this batch else this batch will be entered twice. 
                                 frappe.show_alert({
                                     message:__('Could Not Find Item For This Barcode'),
@@ -206,19 +208,20 @@ frappe.ui.form.on('Delivery Note', {
         })
     },
 
-    scan_bundle: async function (frm) {
+    scan_case: async function (frm) {
         console.log('From Scan Bundle')
         try {
             await frappe.call({
                 method: 'frappe.client.get',
                 args: {
-                    doctype: 'Product Bundle',
+                    doctype: 'Case Detail',
                     filters: {
-                        name: frm.doc.scan_bundle
+                        name: frm.doc.scan_case
                     },
                     
                 },
                 callback: async function(data){
+                    console.log(data)
                     if(!data.message){
                         frappe.show_alert({
                             message:__('Could not find the Bundle'),
@@ -233,13 +236,18 @@ frappe.ui.form.on('Delivery Note', {
                     var i
                     var j
                     var batches = []
-                    for(j =frm.doc.product_bundles.length-1;j>=0;j--){
-                        if(frm.doc.product_bundles[j]==r.name)
-                            break
+                    if(frm.doc.case_details){
+                        for(j =frm.doc.case_details.length-1;j>=0;j--){
+                            if(frm.doc.case_details[j].case_detail==r.name)
+                                frm.doc.scan_case = ""
+                                frm.refresh_field('scan_case')
+                                return
+                        }
                     }
-                    if( j == 0 || frm.doc.product_bundles.length == 0){
-                        var bundle = frm.add_child('product_bundles', {
-                            'product_bundle' : r.name
+                    else j = 0
+                    if( j == 0 || frm.doc.case_details.length == 0){
+                        var bundle = frm.add_child('case_details', {
+                            'case_detail' : r.name
                         })
                     }
 
@@ -254,7 +262,7 @@ frappe.ui.form.on('Delivery Note', {
                                     batch_no: item.batch_no,
                                     uom: item.upm,
                                     price_list:frm.doc.selling_price_list,
-                                    product_bundle: r.name
+                                    case_detail: r.name
                                 });
                                 console.log(row)
                                 batches.push(item.batch_no)
@@ -268,11 +276,11 @@ frappe.ui.form.on('Delivery Note', {
                             batches = "[".concat(batches).concat("]")
                             console.log(bundle)
                             if(bundle) bundle.batches = batches
-                            frm.refresh_field('product_bundles')
+                            frm.refresh_field('case_details')
                             console.log(bundle)
                             frm.refresh_field('items')
-                            frm.doc.scan_bundle = ""
-                            frm.refresh_field('scan_bundle')
+                            frm.doc.scan_case = ""
+                            frm.refresh_field('scan_case')
                         }
                     ])
                 }
@@ -286,15 +294,15 @@ frappe.ui.form.on('Delivery Note', {
 
 
 
-    add_bundle_batches: async function (frm) {
+    add_case_batch: async function (frm) {
         console.log('From Scan Bundle')
         try {
             await frappe.call({
                 method: 'frappe.client.get',
                 args: {
-                    doctype: 'Product Bundle',
+                    doctype: 'Case Detail',
                     filters: {
-                        name: frm.doc.add_bundle_batches
+                        name: frm.doc.add_case_batch
                     },
                     
                 },
@@ -310,14 +318,17 @@ frappe.ui.form.on('Delivery Note', {
                     console.log(r)
                     var i
                     var j 
-                    console.log(frm.doc.items['product_bundles'])
-                    for(j =frm.doc.product_bundles.length-1;j>=0;j--){
-                        if(frm.doc.product_bundles[j]==frm.doc.add_bundle_batches)
-                        break
+                    console.log(frm.doc.items['case_details'])
+                    if(frm.doc.case_details){
+                        for(j =frm.doc.case_details.length-1;j>=0;j--){
+                            if(frm.doc.case_details[j]==r.name)
+                                break
+                        }
                     }
-                    if( j == 0 || frm.doc.product_bundles.length == 0){
-                        var bundle = frm.add_child('product_bundles', {
-                            'product_bundle' : frm.doc.add_bundle_batches
+                    else j = 0
+                    if( j == 0 || frm.doc.case_details.length == 0){
+                        var bundle = frm.add_child('case_details', {
+                            'case_detail' : frm.doc.add_case_batch
                         })
                     }
                     var batches = []
@@ -338,10 +349,10 @@ frappe.ui.form.on('Delivery Note', {
                             batches = "[".concat(batches).concat("]")
                             console.log(bundle)
                             if(bundle) bundle.batches = batches
-                            frm.refresh_field('product_bundles')
+                            frm.refresh_field('case_details')
                             console.log(bundle)
-                            frm.doc.add_bundle_batches = ""
-                            frm.refresh_field('add_bundle_batches')
+                            frm.doc.add_case_batch = ""
+                            frm.refresh_field('add_case_batch')
                         }
                     ])
                 }
@@ -357,12 +368,12 @@ frappe.ui.form.on('Delivery Note', {
 })
 
 frappe.ui.form.on('Bundle Entry Table', {
-    before_product_bundles_remove(frm,cdt,cdn){
+    before_case_details_remove(frm,cdt,cdn){
         const row = locals[cdt][cdn];
         console.log(row)
         var i
         for(i=0;i<frm.doc.items.length;i++){
-            if(frm.doc.items[i].product_bundle == row.product_bundle){
+            if(frm.doc.items[i].case_detail == row.case_detail){
                 frm.doc.items.splice(i,1)
                 i=i-1             
             }
@@ -417,10 +428,10 @@ frappe.ui.form.on('Delivery Note Item', {
                         return;
                     }
                     if(r.message.disabled == 1){
-                        if (row.product_bundle == "" || row.product_bundle == undefined){
+                        if (row.case_detail == "" || row.case_detail == undefined){
                             frappe.msgprint({
                                 title: __('Error'),
-                                message:__('Row Removed Because Disabled Item Selected Without Product Bundle'),
+                                message:__('Row Removed Because Disabled Item Selected Without Case Detail'),
                                 indicator:'red'
                             });
                             frm.doc.items.splice(row.idx-1,1)

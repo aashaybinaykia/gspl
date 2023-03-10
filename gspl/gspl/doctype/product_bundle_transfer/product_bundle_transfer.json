@@ -47,7 +47,7 @@
    "fieldname": "items",
    "fieldtype": "Table",
    "label": "Items",
-   "options": "Case Transfer Item",
+   "options": "Product Bundle Transfer Item",
    "reqd": 1
   },
   {
@@ -89,7 +89,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-03-07 15:38:07.755266",
+ "modified": "2023-01-19 12:02:57.938251",
  "modified_by": "Administrator",
  "module": "GSPL",
  "name": "Product Bundle Transfer",
