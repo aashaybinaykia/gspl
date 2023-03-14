@@ -164,6 +164,9 @@ fixtures = ["Custom Field", "Property Setter", "Client Script"]
 # ]
 
 doc_events = {
+	"Address": {
+		"before_save": "gspl.doc_events.address.before_save",
+	},
 	"Batch": {
 		"after_insert": "gspl.doc_events.batch.after_insert",
 		# "on_trash": "gspl.doc_events.batch.on_trash",
