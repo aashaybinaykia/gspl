@@ -1,0 +1,39 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-03-10 15:44:34.202139",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "case_detail",
+  "batches"
+ ],
+ "fields": [
+  {
+   "fieldname": "case_detail",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Case Detail",
+   "options": "Case Detail",
+   "read_only_depends_on": "case_detail",
+   "reqd": 1
+  },
+  {
+   "fieldname": "batches",
+   "fieldtype": "Long Text",
+   "label": "Batches"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-03-10 15:45:03.955878",
+ "modified_by": "Administrator",
+ "module": "GSPL",
+ "name": "Case Entry Table Delivery Note",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

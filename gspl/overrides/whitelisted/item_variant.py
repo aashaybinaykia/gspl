@@ -66,7 +66,7 @@ def make_variant_item_code_override(template_item_code, template_item_name, vari
         abbr_or_value = (
             cstr(attr.attribute_value) if item_attribute[0].numeric_values else item_attribute[0].abbr
         )
-        if attr.attribute == "Category" and i>0:
+        if attr.attribute == "Category":
             abbreviations_code.append(abbr_or_value)
         else:
             abbreviations_code.append(abbr_or_value)
@@ -76,7 +76,10 @@ def make_variant_item_code_override(template_item_code, template_item_name, vari
 
     if abbreviations_code:
         variant.item_code = "{0}-{1}".format(template_item_code, "-".join(abbreviations_code))
+    if abbreviations_name:
         variant.item_name = "{0}-{1}".format(template_item_name, "-".join(abbreviations_name))
+    else: 
+        variant.item_name = "{0}".format(template_item_name)
 
 
 @frappe.whitelist()

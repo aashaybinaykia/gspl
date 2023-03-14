@@ -49,12 +49,16 @@ frappe.ui.form.on('Sales Order', {
             for(j=0;j<row.qty;j++) {
                 console.log(j)
                 var itemDetails = JSON.parse(row.items)
+                console.log(itemDetails)
                 var k = 0
-                var length = itemDetails.length | 1
+                var length = itemDetails.length
+                if(length == undefined || length == null || length <= 0) length = 1
+                console.log(length)
                 var details
                 for(k = 0;k<length;k++){
                     if(!itemDetails.length) details = itemDetails; else details = itemDetails[k]
                     console.log(details)
+                    console.log(k)
                     if(details.has_batch_no ==1 && details.batch_qty >0) {
                         frm.events.add_child_to_so(frm,row,details.batch_qty,details)
                         

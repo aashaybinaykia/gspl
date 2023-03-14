@@ -5,32 +5,7 @@ frappe.ui.form.on('Stock Entry', {
     //     frm.trigger('set_uom_conversion_factor_to_batch_qty');
     // },
 
-    set_uom_conversion_factor_to_batch_qty: function(frm) {
-        if (frm.doc.stock_entry_type == "Material Transfer") {
-            $.each(frm.doc.items || [], function(idx, row) {
-                if (row.batch_no){
-                    frappe.call({
-                        method: 'erpnext.stock.doctype.batch.batch.get_batch_qty',
-                        args: {
-                            item_code: row.item_code,
-                            warehouse: row.s_warehouse,
-                            batch_no: row.batch_no, 
-                        },
-                        callback: (r) => {
-                            if(!r.message) {
-                                return;
-                            }
-                            let qty = r.message;
-    
-                            if (qty) {
-                                frappe.model.set_value(row.doctype, row.name, "qty", qty);
-                            }
-                        }
-                    })
-                }
-            })
-        }
-    }
+
 })
 
 frappe.ui.form.on('Stock Entry Detail', {
