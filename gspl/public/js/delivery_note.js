@@ -166,7 +166,7 @@ frappe.ui.form.on('Delivery Note', {
                             item.batch_no = data.message.name
                             item.qty = data.message.batch_qty
                             if(frm.doc.add_case_batch !== undefined) item.case_detail = frm.doc.add_case_batch //if called from add bundle batches
-                            frm.refresh_field('items')
+                            //frm.refresh_field('items')
                         }
                         else{
                             var addItem = frm.doc.items.find(element => element.case_detail == frm.doc.add_case_batch )
@@ -187,10 +187,11 @@ frappe.ui.form.on('Delivery Note', {
                                 newChild.qty = data.message.batch_qty
                                 console.log("newchild")
                                 console.log(newChild)
+                                console.log(frm.doc)
                                 
                                 let row = frm.add_child('items', newChild);
                                 console.log(row)
-                                frm.script_manager.trigger('item_code', row.doctype, row.name);
+                                //frm.script_manager.trigger('item_code', row.doctype, row.name);
                                 
                                 frappe.show_alert({
                                     message:__('Added new Item from Bundle'),
@@ -273,7 +274,8 @@ frappe.ui.form.on('Delivery Note', {
                         () => {
                             
                             console.log(batches)
-                            batches = "[".concat(batches).concat("]")
+                            //batches = "[".concat(batches).concat("]")
+                            batches = JSON.stringify(batches)
                             console.log(bundle)
                             if(bundle) bundle.batches = batches
                             frm.refresh_field('case_details')
@@ -367,7 +369,7 @@ frappe.ui.form.on('Delivery Note', {
 
 })
 
-frappe.ui.form.on('Bundle Entry Table', {
+frappe.ui.form.on('Case Entry Table Delivery Note', {
     before_case_details_remove(frm,cdt,cdn){
         const row = locals[cdt][cdn];
         console.log(row)

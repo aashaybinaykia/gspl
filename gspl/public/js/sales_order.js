@@ -32,7 +32,7 @@ $.extend(cur_frm.cscript, new erpnext.selling.CustomSalesOrderController({frm: c
 
 frappe.ui.form.on('Sales Order', {
     timeline_refresh: function(frm){
-        frm.doc.ignore_pricing_rule = false
+        if(frm.doc.docstatus == 0) frm.doc.ignore_pricing_rule = false
     },
     validate: function(frm) {
         console.log("Validate Starts")

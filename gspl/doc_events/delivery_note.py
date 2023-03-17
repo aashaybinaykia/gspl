@@ -35,7 +35,7 @@ def validate(doc, method):
     #Get all batches from item table - master_batches
     master_batches = set()
     for row in doc.items:
-        master_batches.add(int(row.batch_no))
+        master_batches.add(str(row.batch_no))
     
     #Iterate through all product bundles, convert 'batches' json to array - 'product_batches'
     #Inside iteration, check if 'product_batches' is a subset of 'master_batches'
