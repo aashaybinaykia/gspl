@@ -34,6 +34,13 @@ frappe.ui.form.on('Sales Order', {
     timeline_refresh: function(frm){
         if(frm.doc.docstatus == 0) frm.doc.ignore_pricing_rule = false
     },
+    onload: function(frm){
+        console.log(frm.doc)
+        
+    },
+    onload_post_render: function(frm) {
+        frm.get_field("order_entry_items").grid.set_multiple_add("order_item", "qty");
+    },
     validate: function(frm) {
         console.log("Validate Starts")
         frm.clear_table('items');
@@ -41,7 +48,6 @@ frappe.ui.form.on('Sales Order', {
         var row
         frm.doc.ignore_pricing_rule = true
         for(i=0;i<frm.doc.order_entry_items.length;i++){
-            //frm.events.get_so_items(frm,row);
             row = frm.doc.order_entry_items[i]
             console.log(row)
             var j
@@ -67,6 +73,9 @@ frappe.ui.form.on('Sales Order', {
                     else if(details.has_batch_no == 0){
                         frm.events.add_child_to_so(frm,row,row.qty,details)
                         break loop
+                    }
+                    else {
+                        frm.events.add_child_to_so(frm,row,8,details)
                     }
                 }
             }
@@ -108,7 +117,7 @@ frappe.ui.form.on('Sales Order', {
                             plc_conversion_rate: me.doc.plc_conversion_rate,
                             company: me.doc.company,
                             order_type: me.doc.order_type,
-                            ignore_pricing_rule: me.doc.ignore_pricing_rule,
+                            ignore_pricing_rule: 0,
                             doctype: me.doc.doctype,
                             name: me.doc.name,
                             project: item.project || me.docproject,
@@ -145,119 +154,30 @@ frappe.ui.form.on('Sales Order', {
         }
     },
     
-    get_so_items: function(frm,row){
-        console.log("Get SO Items");
-            frappe.call({
-                method: 'frappe.client.get_value',
-                args: {
-                    doctype: 'Item',
-                    filters: {
-                        'name': row.order_item,
-                    },
-                    fieldname: ['has_variants']
-                },
-                callback: function(data) {
-                    var items = []
-                    if(data.message.has_variants == 0){
-                            items.push(row)
-                        frm.events.fill_so_items(frm,items)
-                    }
-                    else {
-                        frappe.call({
-                            method: 'frappe.client.get_list',
-                            args: {
-                                doctype: 'Item',
-                                filters: {
-                                    'variant_of': row.order_item,
-                                    'name': ['like', '%S%']
-                                }
-                            },
-                            callback: function(data2){
-                                var i
-                                    for( i = 0;i<data2.message.length;i++){
-                                        var temp = {
-                                                    discount_amount: row.discount_amount,
-                                                    discount_percentage: row.discount_percentage,
-                                                    order_item: data2.message[i].name,
-                                                    final_rate: row.final_rate,
-                                                    // price_list: row.price_list,
-                                                    price_list_rate: row.price_list_rate,
-                                                    qty:row.qty
-                                    }
-                                    items.push(temp)
-                                    }
-                                frm.events.fill_so_items(frm,items)
-                            }
-                        })
-                    }
-                }
-            })
-    },
+
     
-    fill_so_items: async function (frm,items){
-        console.log("Fill SO Items")
-        var i
-        for(i = 0;i<items.length;i++){
-            await frappe.call({
-                method: 'frappe.client.get_list',
-                args: {
-                    doctype: 'Batch',
-                    filters: {
-                        'item': items[i].order_item
-                    },
-                    fields:['batch_qty'],
-                    order_by: 'batch_qty desc',
-                    pluck: 'batch_qty'
-                },
-                callback: function(data){
-                   if(data.message[0] == undefined){
-                        frm.events.add_child_to_so(frm,items[i],items[i].qty)
-                   }
-                   else {
-                       var j
-                       for (j=0;j<items[i].qty;j++){
-                           frm.events.add_child_to_so(frm,items[i],data.message[0].batch_qty)
-                       }
-                   }
-                }
-                            
-            })
-        }
-    },
+
     
     add_child_to_so: async function (frm,item,qty,details){
         console.log("Add Child To So")
-        /*frappe.call({
-            method: 'frappe.client.get_value',
-            args: {
-                doctype: 'Item',
-                filters: {
-                    'name': item.order_item,
-                },
-                fieldname: ['item_name','description','stock_uom','gst_hsn_code']
-            },
-            callback: function(data) {
-                details = data.message
-                */
-                let child = await frm.add_child('items',{
-                    //item_code: item.order_item,
-                    item_code:details.item_code,
-                    qty: qty,
-                    discount_amount: item.discount_amount,
-                    discount_percentage: item.discount_percentage,
-                    rate: item.final_rate,
-                    price_list: frm.doc.selling_price_list,
-                    price_list_rate: item.price_list_rate,
-                    delivery_date: frm.doc.delivery_date,
-                    item_name: details.item_name,
-                    description: details.description,
-                    uom: details.stock_uom,
-                    get_hsn_code: details.get_hsn_code
-                })
-                console.log(child)
-                frm.refresh_field('items')
-            /*}
-        })*/
+
+        let child = await frm.add_child('items',{
+            //item_code: item.order_item,
+            item_code:details.item_code,
+            qty: qty,
+            discount_amount: item.discount_amount,
+            discount_percentage: item.discount_percentage,
+            rate: item.final_rate,
+            price_list: frm.doc.selling_price_list,
+            price_list_rate: item.price_list_rate,
+            delivery_date: frm.doc.delivery_date,
+            item_name: details.item_name,
+            description: details.description,
+            uom: details.stock_uom,
+            get_hsn_code: details.get_hsn_code
+        })
+        console.log(child)
+        frm.refresh_field('items')
     },
 
 })
@@ -315,7 +235,6 @@ frappe.ui.form.on('Sales Order Entry Item', {
                             fields: ['item_code','batch_qty','has_batch_no','item_name','description','stock_uom','gst_hsn_code'],
                             filters: {
                                 'variant_of': item.order_item,
-                                'name': ['like', '%S%']
                             }
                         },
                         callback: function(data2){
