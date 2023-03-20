@@ -9,24 +9,10 @@ erpnext.stock.DeliveryNoteController = erpnext.stock.DeliveryNoteController.exte
 $.extend(cur_frm.cscript, new erpnext.stock.DeliveryNoteController({frm: cur_frm}));
 
 frappe.ui.form.on('Delivery Note', {
-    /*onload: function(frm){
+
+
+    before_save: function(frm){
         console.log(frm.doc)
-        console.log(frm.doc.sales_order)
-        console.log(frm.doc.__islocal)
-        if(frm.doc.__islocal){
-            console.log("Hi from for")
-            var i
-            for(i=0;i<frm.doc.items.length;i++){
-                console.log(i)
-                frm.doc.items[i].batch_no = ""
-                console.log(frm.doc.items[i])
-            }
-            frm.refresh_field('items')
-        }
-        console.log(frm.doc)
-    },*/
-    onload: function(frm){
-        //var addITem
     },
     on_submit: function(frm){
         console.log(frm.doc.case_details)
@@ -51,163 +37,22 @@ frappe.ui.form.on('Delivery Note', {
                 }
             }
         })
+        frm.set_query("sales_order", function() {
+            return {
+                "filters": {
+                    "customer": frm.doc.customer,
+                }
+            };
+        });
     },
     
     validate: async function(frm) {
-        console.log(frm)
-        var i
-        var row
-            for(i=0;i<frm.doc.items.length;i++){
-                row = frm.doc.items[i]
-                if (row.batch_no !== undefined && row.batch_no !== ''){
-                    console.log(row)
-                    await frappe.call({
-                        method: 'erpnext.stock.doctype.batch.batch.get_batch_qty',
-                        args: {
-                            item_code: row.item_code,
-                            warehouse: row.warehouse,
-                            batch_no: row.batch_no, 
-                        },
-                        callback: (r) => {
-                            if(!r.message) {
-                                return;
-                            }
-                            let qty = r.message;
 
-                            if (qty) {
-                                frappe.model.set_value(row.doctype, row.name, "qty", qty);
-                            }
-                        }
-                    })
-                }
-                else {
-                    await frappe.call({
-                        method: 'frappe.client.get_value',
-                        args: {
-                            'doctype': 'Item',
-                            'filters': {'name': row.item_code},
-                            'fieldname': 'has_batch_no'
-                        },
-                        callback: (r) => {
-                            console.log(r)
-                            if(!r.message) {
-                                return;
-                            }
-                            else {
-                                if(r.message.has_batch_no == 1){
-                                    var arr = frm.doc.items.splice(i,1)
-                                    i=i-1
-                                    frm.refresh_field('items')
-                                }
-                            }
-                        }
-                    })
-                }
-                if(i>=0 && i<frm.doc.items.length) frm.doc.items[i].idx = i+1
-            }
         
     },  
-    // before_save: function(frm) {
-    //     $.each(frm.doc.items || [], function(idx, row) {
-    //         if (row.batch_no){
-    //             frappe.call({
-    //                 method: 'erpnext.stock.doctype.batch.batch.get_batch_qty',
-    //                 args: {
-    //                     item_code: row.item_code,
-    //                     warehouse: row.warehouse,
-    //                     batch_no: row.batch_no, 
-    //                 },
-    //                 callback: (r) => {
-    //                     if(!r.message) {
-    //                         return;
-    //                     }
-    //                     let qty = r.message;
+     before_save: function(frm) {
 
-    //                     if (qty) {
-    //                         frappe.model.set_value(row.doctype, row.name, "qty", qty);
-    //                     }
-    //                 }
-    //             })
-    //         }
-    //     })
-    // },
-
-    add_batch: async function(frm) {
-        console.log(frm.doc)
-        await frappe.call({
-            method: 'frappe.client.get_value',
-            args: {
-                doctype: 'Batch',
-                filters: {
-                    'name': frm.doc.add_batch,
-                },
-                fieldname: ['name','batch_qty','item']
-            },
-            callback: function(data) {
-                console.log(data)
-                if(frm.doc.add_batch !== "")
-                {    
-                    if(!data.message.item){
-                        frappe.show_alert({
-                            message:__('Could not find the Batch'),
-                            indicator:'Red'
-                        }, 5);
-                    }
-                    else
-                    {
-                        console.log(data)
-                        console.log(frm)
-                        var item = frm.doc.items.find(element => element.item_code == data.message.item && (element.batch_no == "" || element.batch_no == undefined))
-                        console.log(item)
-                        var exists = frm.doc.items.find(element => element.batch_no == data.message.name)
-                        if(exists) item = exists
-                        if(item){
-                            //frm.doc.addItem = item
-                            item.batch_no = data.message.name
-                            item.qty = data.message.batch_qty
-                            if(frm.doc.add_case_batch !== undefined) item.case_detail = frm.doc.add_case_batch //if called from add bundle batches
-                            //frm.refresh_field('items')
-                        }
-                        else{
-                            var addItem = frm.doc.items.find(element => element.case_detail == frm.doc.add_case_batch )
-                            if(!addItem || frm.doc.items.find(element => element.batch_no == data.message.name)){//if an item from the bundle does not exist, incase it exists, it is not the same item as this batch else this batch will be entered twice. 
-                                frappe.show_alert({
-                                    message:__('Could Not Find Item For This Barcode'),
-                                    indicator:'Red'
-                                }, 5);
-                            }
-                            else {
-                                var newChild = {...addItem}
-                                newChild.name = undefined
-                                newChild.idx = undefined
-                                newChild.child_docname = undefined
-                                newChild.incoming_rate = undefined
-                                newChild.batch_no = data.message.name
-                                newChild.item_code = data.message.item
-                                newChild.qty = data.message.batch_qty
-                                console.log("newchild")
-                                console.log(newChild)
-                                console.log(frm.doc)
-                                
-                                let row = frm.add_child('items', newChild);
-                                console.log(row)
-                                //frm.script_manager.trigger('item_code', row.doctype, row.name);
-                                
-                                frappe.show_alert({
-                                    message:__('Added new Item from Bundle'),
-                                    indicator:'Green'
-                                }, 5);
-                            }
-                            frm.refresh_field('items')
-                        }
-                        frm.doc.add_batch = ""
-                        frm.refresh_field('add_batch')
-                        console.log(item)
-                    }
-                }
-            }
-        })
-    },
+     },
 
     scan_case: async function (frm) {
         console.log('From Scan Bundle')
@@ -294,76 +139,6 @@ frappe.ui.form.on('Delivery Note', {
     },
 
 
-
-
-    add_case_batch: async function (frm) {
-        console.log('From Scan Bundle')
-        try {
-            await frappe.call({
-                method: 'frappe.client.get',
-                args: {
-                    doctype: 'Case Detail',
-                    filters: {
-                        name: frm.doc.add_case_batch
-                    },
-                    
-                },
-                callback: async function(data){
-                    if(!data.message){
-                        frappe.show_alert({
-                            message:__('Could not find the Bundle'),
-                            indicator:'Red'
-                        }, 3);
-                        return
-                    }
-                    var r = data.message
-                    console.log(r)
-                    var i
-                    var j 
-                    console.log(frm.doc.items['case_details'])
-                    if(frm.doc.case_details){
-                        for(j =frm.doc.case_details.length-1;j>=0;j--){
-                            if(frm.doc.case_details[j]==r.name)
-                                break
-                        }
-                    }
-                    else j = 0
-                    if( j == 0 || frm.doc.case_details.length == 0){
-                        var bundle = frm.add_child('case_details', {
-                            'case_detail' : frm.doc.add_case_batch
-                        })
-                    }
-                    var batches = []
-                    frappe.run_serially([
-                        async () => {
-                            
-                            for(i=0;i<r.items.length;i++){
-                                var item = r.items[i]
-                                console.log(item)
-                                var row = await frm.set_value('add_batch',item.batch_no)
-                                batches.push(item.batch_no)
-                                console.log(row)
-                            }
-                        },
-                        () => {
-                            //console.log(frm.doc.addItem)
-                            console.log(batches)
-                            batches = "[".concat(batches).concat("]")
-                            console.log(bundle)
-                            if(bundle) bundle.batches = batches
-                            frm.refresh_field('case_details')
-                            console.log(bundle)
-                            frm.doc.add_case_batch = ""
-                            frm.refresh_field('add_case_batch')
-                        }
-                    ])
-                }
-            })
-        }
-        catch (r){
-            return
-        }
-    }
 
 
 

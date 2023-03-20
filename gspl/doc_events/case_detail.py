@@ -9,18 +9,39 @@ from erpnext.stock.doctype.batch.batch import get_batch_qty
 
 @frappe.whitelist()
 def before_save(doc, method):
-    set_bundle_type(doc)
+    set_case_type_and_content(doc)
     enable_disable_batch(doc)
     calculate_rate_and_qty(doc)
 
+@frappe.whitelist()
+def validate(doc, method):
+    valid_disabled_warehouses = ["GD Shop - GSPL","Infra Park - GSPL","Shop - GSPL"]
+    if ((doc.enabled==False) and (doc.warehouse not in valid_disabled_warehouses)):
+        frappe.throw("Case can only open in company warehouse")
 
+def grp_content_determiner(grp):
+    if ((grp == 'Shirting Pcs') | (grp == 'Suiting Pcs')):
+        return 'Piece'
+    elif ((grp == 'PC-PV') | (grp == 'Cotton-PV')):
+        return 'Combi'
+    else:
+        return 'NA'
 
-def set_bundle_type(doc):
+def set_case_type_and_content(doc):
     item_templates = []
     has_template = False
     template_name = "mixed"
 
+    total_items_in_case = len(doc.items)
+    sl_items = 0
+
     for row in doc.items:
+
+        # Check SL eligibility
+        qty = row.qty
+        if ((qty>=3) & (qty<=8.5)):
+            sl_items += 1
+
         item = frappe.get_doc("Item", row.item_code)
 
         if item.variant_of:
@@ -29,7 +50,6 @@ def set_bundle_type(doc):
                 has_template = True
         else:
             has_template = False
-            break
 
 
     if has_template and len(item_templates) == 1:
@@ -44,6 +64,20 @@ def set_bundle_type(doc):
         doc.append('item_templates', {
             'item_template': item_template,
         })
+
+    #Setting Content Type
+    sl_threshold = 0.7
+    sample_item = frappe.get_doc("Item", doc.items[0].item_code)
+    sample_item_group = sample_item.item_group
+    content = grp_content_determiner(sample_item_group)
+    if content == 'NA':
+        sl_perc = sl_items/total_items_in_case
+        if sl_perc >= sl_threshold:
+            content = 'Short Length'
+        else:
+            content = 'Thaan'
+    
+    doc.contents = content
 
 
 def calculate_rate_and_qty(doc):

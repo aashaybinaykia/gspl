@@ -168,7 +168,7 @@ doc_events = {
 		"before_save": "gspl.doc_events.address.before_save",
 	},
 	"Batch": {
-		"after_insert": "gspl.doc_events.batch.after_insert",
+		#"after_insert": "gspl.doc_events.batch.after_insert",
 		# "on_trash": "gspl.doc_events.batch.on_trash",
 	},
     "Delivery Note": {
@@ -180,6 +180,7 @@ doc_events = {
 		"before_validate": "gspl.doc_events.item.before_validate",
 	},
 	"Case Detail": {
+		"validate": "gspl.doc_events.case_detail.validate",
 		"before_save": "gspl.doc_events.case_detail.before_save",
 	},
 	"Purchase Invoice": {

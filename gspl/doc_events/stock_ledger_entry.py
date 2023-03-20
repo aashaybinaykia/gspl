@@ -40,6 +40,6 @@ def validate_batch_qty(doc):
 def set_highest_item_batch_qty(doc):
     if doc.item_code:
         item = frappe.get_doc("Item", doc.item_code)
-        if flt(doc.actual_qty) > flt(item.batch_qty):
+        if (flt(doc.actual_qty) <21) & (flt(doc.actual_qty) > flt(item.batch_qty)):
             item.batch_qty = flt(doc.actual_qty)
             item.save()

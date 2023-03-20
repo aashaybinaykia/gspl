@@ -13,13 +13,13 @@ def before_save(doc, method):
 
 @frappe.whitelist()
 def before_submit(doc, method):
-    if not doc.product_bundle_transfer:
+    if not doc.case_detail_transfer:
         validate_disabled_batch(doc)
 
 
 @frappe.whitelist()
 def before_cancel(doc, method):
-    if doc.product_bundle_transfer:
+    if not doc.case_detail_transfer:
         validate_disabled_batch_before_cancel(doc)
 
 

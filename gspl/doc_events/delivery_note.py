@@ -51,6 +51,36 @@ def validate(doc, method):
         if len(missing_batches) != 0:
             frappe.throw(_("Batches "+str(missing_batches)+" From Bundle "+str(row.case_detail)+" Not Present in Items Table"))
 
+    
+    sales_order_item_table = frappe.get_doc('Sales Order', doc.sales_order).items
+    if sales_order_item_table:
+        for row in doc.items:
+            if not row.so_detail:
+                for so_row in sales_order_item_table:
+                    if so_row.delivered_qty > 0:
+                        sales_order_item_table.remove(so_row)
+                        continue
+
+                    if so_row.item_code == row.item_code: # Check if this row's item code is same as row.itemcode
+                        row.so_detail = so_row.name
+                        row.against_sales_order = doc.sales_order
+                        row.price_list = so_row.price_list
+                        row.price_list_rate = so_row.price_list_rate
+                        row.base_price_list_rate = so_row.base_price_list_rate
+                        row.discount_percentage = so_row.discount_percentage
+                        row.discount_amount = so_row.discount_amount
+                        row.rate = so_row.rate
+
+                        logger.info("Assigning so_detail to item code "+row.item_code+" in Delivery Note")
+                        logger.info(row)
+                        sales_order_item_table.remove(so_row)
+                        break
+            
+            if not row.so_detail:
+                logger.debug("Item code "+row.item_code+" was not assigned any so_detail value")
+    else:
+        logger.debug("Could not find Sales Order "+doc.sales_order)
+
 
 def update_case_detail(doc, status):
 

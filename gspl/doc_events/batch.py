@@ -16,7 +16,7 @@ def after_insert(doc, method):
 def set_highest_item_batch_qty(doc):
     item = frappe.get_doc("Item", doc.item)
 
-    if flt(doc.batch_qty) > flt(item.batch_qty):
+    if (flt(doc.batch_qty) <21) & (flt(doc.batch_qty) > flt(item.batch_qty)):
         item.batch_qty = flt(doc.batch_qty)
         item.save()
 
