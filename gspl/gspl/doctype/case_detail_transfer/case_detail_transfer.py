@@ -15,6 +15,7 @@ class CaseDetailTransfer(Document):
 	def create_stock_entry(self):
 		se = frappe.new_doc("Stock Entry")
 		se.stock_entry_type = "Material Transfer"
+		se.set_posting_time = 1
 		se.posting_date = self.posting_date
 		se.posting_time = self.posting_time
 

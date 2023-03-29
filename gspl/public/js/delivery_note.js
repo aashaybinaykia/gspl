@@ -10,12 +10,40 @@ $.extend(cur_frm.cscript, new erpnext.stock.DeliveryNoteController({frm: cur_frm
 
 frappe.ui.form.on('Delivery Note', {
 
+    // validate: function(frm) {
+    //     console.log("Validate Starts")
+    //     $.each(frm.doc.items || [], function(idx, row) {
+    //         console.log(row)
+    //         if (row.batch_no){
+    //             frappe.call({
+    //                 method: 'erpnext.stock.doctype.batch.batch.get_batch_qty',
+    //                 args: {
+    //                     item_code: row.item_code,
+    //                     warehouse: row.warehouse,
+    //                     batch_no: row.batch_no, 
+    //                 },
+    //                 callback: (r) => {
+    //                     console.log(r)
+    //                     if(!r.message) {
+    //                         return;
+    //                     }
+    //                     let qty = r.message;
 
-    before_save: function(frm){
-        console.log(frm.doc)
-    },
+    //                         if (qty) {
+    //                             frappe.model.set_value(row.doctype, row.name, "qty", qty);
+    //                         }
+    //                     }
+    //             })
+    //         }
+    //     })
+    // },
+
     on_submit: function(frm){
         console.log(frm.doc.case_details)
+    },
+    sales_order: function(frm){
+        console.log("From Sales Order")
+        frm.set_value("ignore_pricing_rule",true)
     },
     customer: function(frm){
         frappe.call({
@@ -41,18 +69,12 @@ frappe.ui.form.on('Delivery Note', {
             return {
                 "filters": {
                     "customer": frm.doc.customer,
+                    "docstatus": 1
                 }
             };
         });
     },
     
-    validate: async function(frm) {
-
-        
-    },  
-     before_save: function(frm) {
-
-     },
 
     scan_case: async function (frm) {
         console.log('From Scan Bundle')
