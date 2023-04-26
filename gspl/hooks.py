@@ -129,7 +129,6 @@ app_license = "GPL 3.0"
 
 doctype_js = {
 	'Delivery Note': 'public/js/delivery_note.js',
-	'Case Detail': 'public/js/case_detail.js',
 	'Sales Order': 'public/js/sales_order.js',
 	'Sales Invoice': 'public/js/sales_invoice.js',
 	'Stock Entry': 'public/js/stock_entry.js',
