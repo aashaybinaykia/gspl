@@ -1,21 +1,31 @@
 
 from __future__ import unicode_literals
 
+import json
+
 import frappe
 from frappe import _
-from frappe.utils import cint
-from erpnext.stock.doctype.batch.batch import get_batch_qty
-from frappe.utils import cint, flt
-
-from erpnext.stock.doctype.delivery_note.delivery_note import DeliveryNote
+from frappe.model.naming import parse_naming_series
 
 from erpnext.stock.doctype.batch.batch import get_batch_qty
 
 from frappe.utils import logger
-import json
 
 frappe.utils.logger.set_log_level("DEBUG")
 logger = frappe.logger("api", allow_site=True, file_count=50)
+
+
+@frappe.whitelist()
+def before_naming(doc, method):
+    if doc.is_return == True:
+        doc.naming_series = "DRET-.FY.-"
+
+
+@frappe.whitelist()
+def before_save(doc, method):
+    series = parse_naming_series(doc.naming_series)
+    doc.series_number = doc.name.removeprefix(series)
+
 
 @frappe.whitelist()
 def on_submit(doc, method):

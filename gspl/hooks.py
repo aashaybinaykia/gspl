@@ -166,11 +166,9 @@ doc_events = {
 	"Address": {
 		"before_save": "gspl.doc_events.address.before_save",
 	},
-	"Batch": {
-		#"after_insert": "gspl.doc_events.batch.after_insert",
-		# "on_trash": "gspl.doc_events.batch.on_trash",
-	},
-    "Delivery Note": {
+	"Delivery Note": {
+		"before_naming": "gspl.doc_events.delivery_note.before_naming",
+		"before_save": "gspl.doc_events.delivery_note.before_save",
 		"on_submit": "gspl.doc_events.delivery_note.on_submit",
 		"on_cancel": "gspl.doc_events.delivery_note.on_cancel",
 		"validate": "gspl.doc_events.delivery_note.validate",
