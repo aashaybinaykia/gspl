@@ -184,12 +184,10 @@ doc_events = {
 	# "Sales Order": {
 	# 	"before_validate": "gspl.doc_events.sales_order.before_validate",
 	# },
-	# "Sales Invoice": {
-	# 	"validate": "gspl.doc_events.sales_invoice.validate",
-	# 	"before_save": "gspl.doc_events.sales_invoice.before_save",
-	# 	"on_submit": "gspl.doc_events.sales_invoice.on_submit",
-	# 	"on_cancel": "gspl.doc_events.sales_invoice.on_cancel",
-	# },
+	"Sales Invoice": {
+		"autoname": "gspl.doc_events.sales_invoice.autoname",
+		"before_validate": "gspl.doc_events.sales_invoice.before_validate",
+	},
 	"Stock Entry": {
 		"before_save": "gspl.doc_events.stock_entry.before_save",
 		"before_submit": "gspl.doc_events.stock_entry.before_submit",
