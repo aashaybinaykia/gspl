@@ -1,0 +1,98 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "prompt",
+ "creation": "2023-04-09 01:06:58.984406",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "import_type",
+  "section_break_mzrhb",
+  "total_items_created",
+  "total_variants_created",
+  "column_break_aeaow",
+  "total_batches_created",
+  "total_pi_created"
+ ],
+ "fields": [
+  {
+   "fieldname": "import_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Import Type",
+   "options": "\nOthers\nVimal\nArvind",
+   "reqd": 1
+  },
+  {
+   "fieldname": "total_items_created",
+   "fieldtype": "Int",
+   "label": "Total Items Created",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_variants_created",
+   "fieldtype": "Int",
+   "label": "Total Variants Created",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_aeaow",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_batches_created",
+   "fieldtype": "Int",
+   "label": "Total Batches Created",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_pi_created",
+   "fieldtype": "Int",
+   "label": "Total PI Created",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_mzrhb",
+   "fieldtype": "Section Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-04-21 15:51:58.109714",
+ "modified_by": "Administrator",
+ "module": "GSPL",
+ "name": "Purchase Invoice Import",
+ "naming_rule": "Set by user",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

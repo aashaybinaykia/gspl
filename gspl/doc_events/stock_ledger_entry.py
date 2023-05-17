@@ -26,7 +26,7 @@ def validate_batch_qty(doc):
     if doc.voucher_type == "Stock Entry":
         stock_entry_type = frappe.db.get_value(doc.voucher_type, doc.voucher_no, 'stock_entry_type')
 
-        if stock_entry_type == "Repack":
+        if stock_entry_type == "Repack" or stock_entry_type == "Material Receipt":
             return
 
     batch_qty = get_batch_qty(batch_no=doc.batch_no, warehouse=doc.warehouse, item_code=doc.item_code)

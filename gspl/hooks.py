@@ -181,20 +181,23 @@ doc_events = {
 		"on_submit": "gspl.doc_events.purchase_invoice.on_submit",
 		"before_cancel": "gspl.doc_events.purchase_invoice.before_cancel",
 	},
-	# "Sales Order": {
-	# 	"before_validate": "gspl.doc_events.sales_order.before_validate",
-	# },
+	"Sales Order": {
+		"before_validate": "gspl.doc_events.sales_order.before_validate",
+	},
+	"Pricing Rule": {
+		"validate": "gspl.doc_events.pricing_rule.validate",
+	},
 	"Sales Invoice": {
 		"autoname": "gspl.doc_events.sales_invoice.autoname",
 		"before_validate": "gspl.doc_events.sales_invoice.before_validate",
 	},
 	"Stock Entry": {
-		"before_save": "gspl.doc_events.stock_entry.before_save",
+		"before_validate": "gspl.doc_events.stock_entry.before_validate",
 		"before_submit": "gspl.doc_events.stock_entry.before_submit",
 		"before_cancel": "gspl.doc_events.stock_entry.before_cancel",
 	},
 	"Stock Ledger Entry": {
 		"validate": "gspl.doc_events.stock_ledger_entry.validate",
-        "on_submit": "gspl.doc_events.stock_ledger_entry.on_submit",
+		"on_submit": "gspl.doc_events.stock_ledger_entry.on_submit",
 	},
 }

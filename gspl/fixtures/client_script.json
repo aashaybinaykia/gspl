@@ -4,12 +4,10 @@
   "doctype": "Client Script",
   "dt": "Sales Order",
   "enabled": 0,
-  "modified": "2023-03-15 16:50:27.792918",
+  "modified": "2023-04-06 12:51:56.822339",
+  "module": null,
   "name": "Sales Order-Form",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
-  "script": "frappe.ui.form.on('Sales Order', {\n\tcustomer(frm) {\n        console.log(frm.doc.customer_address)\n        frappe.model.set_value(frm.doctype, frm.name, \"shipping_address_name\", frm.doc.customer_address);\n            }\n})",
+  "script": "frappe.ui.form.on('Sales Order', {\r\n    // timeline_refresh: function(frm){\r\n    //     if(frm.doc.docstatus == 0) frm.doc.ignore_pricing_rule = false\r\n    // },\r\n    \r\n    onload_post_render: function(frm) {\r\n        frm.get_field(\"order_entry_items\").grid.set_multiple_add(\"order_item\", \"qty\");\r\n    },\r\n})\r\n\r\n",
   "view": "Form"
  },
  {
@@ -17,12 +15,54 @@
   "doctype": "Client Script",
   "dt": "Customer",
   "enabled": 1,
-  "modified": "2023-02-26 12:48:59.102627",
+  "modified": "2023-04-01 10:04:40.816506",
+  "module": null,
   "name": "Customer-Form",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "script": "frappe.ui.form.on('Customer', {\n    onload(frm) {\n\n        frm.set_query('default_transporter', function() {\n        \treturn {\n        \t\tfilters: {\n        \t\t\t'is_transporter': 1\n        \t\t}\n        \t}\n        });        \n        \n    },\n\trefresh(frm) {\n\t\t// your code here\n\t},\n\t\n\n\n\n})\n\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Delivery Note",
+  "enabled": 0,
+  "modified": "2023-04-06 23:58:49.699071",
+  "module": null,
+  "name": "del",
+  "script": "frappe.ui.form.on('Delivery Note', {\n\trefresh(frm) {\n\t\t// your code here\n\t}\n})\n\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Stock Entry",
+  "enabled": 1,
+  "modified": "2023-04-13 15:08:11.565018",
+  "module": null,
+  "name": "Stock Entry",
+  "script": "frappe.ui.form.on('Stock Entry', {\r\n    printBarcode: function(doc) {\r\n      frappe.run_serially([\r\n        function() {\r\n          return frappe.ui.form.qz_init({silent: true});\r\n        },\r\n        function() {\r\n          return frappe.ui.form.qz_get_printer_list();\r\n        },\r\n        function(printerList) {\r\n          return new Promise(function(resolve, reject) {\r\n            frappe.prompt({\r\n              label: 'Select a printer',\r\n              fieldname: 'printer',\r\n              fieldtype: 'Select',\r\n              options: printerList,\r\n            }, function(values) {\r\n              resolve(values.printer);\r\n            });\r\n          });\r\n        },\r\n        function(selectedPrinter) {\r\n          return frappe.ui.form.qz_connect({silent: true}).then(function() {\r\n            const config = qz.configs.create(selectedPrinter);\r\n            const printData = doc.items.reduce(function(acc, item) {\r\n              if (item.t_warehouse && !item.s_warehouse) {\r\n                acc.push({\r\n                  type: 'raw',\r\n                  format: 'plain',\r\n                //   data: `^XA\r\n                //          ^FO25,0^BY1,2^BCN,50,N,N^FD${item.batch_no}^FS\r\n                //          ^FO20,55^A0N,24,24^FD${item.batch_no}^FS\r\n                //          ^FO20,80^A0N,24,24^FD${item.item_code}^FS\r\n                //          ^FO190,105^A0N,24,24^FD${item.qty}^FS\r\n                //          ^XZ`\r\n                \r\n                    data: `N\\nq302\\nQ158,24\\nJF\\nD9\\nS2\\nB14,12,0,1,2,6,37,B,\"${item.batch_no}\"\\nA14,90,0,3,1,1,N,\"${item.item_code}\"\\nA14,120,0,3,1,1,N,\"${item.qty}\"\\nP1,1\\nN\\nFF`\r\n          \r\n                });\r\n              }\r\n              return acc;\r\n            }, []);\r\n            if (printData.length) {\r\n              return qz.print(config, printData).then(() => {\r\n                console.log('Barcode printed successfully.');\r\n              }).catch(function (err) {\r\n                console.error(err);\r\n              });\r\n            } else {\r\n              frappe.show_alert({\r\n                message: 'No items to print barcode',\r\n                indicator: 'orange'\r\n              });\r\n            }\r\n          });\r\n        }\r\n      ]);\r\n    },\r\n\r\n\r\n    refresh: function(frm) {\r\n        \r\n        frm.add_custom_button(__('Print Barcode'), function() {\r\n            frm.events.printBarcode(frm.doc);\r\n        });\r\n    \r\n        if (frm.doc.docstatus <1) {\r\n            frm.add_custom_button(__('Duplicate Row'), function() {\r\n                if (!frm.doc.items) {\r\n                    frappe.msgprint(__('Items table has not been loaded yet. Please try again.'));\r\n                    return;\r\n                }\r\n                frappe.prompt([\r\n                    {fieldtype: 'Int', label: 'Row Number', fieldname: 'row_num',reqd: true},\r\n                    {fieldtype: 'Int', label: 'Number of Duplicates', fieldname: 'n',reqd: true},\r\n                ], function(values) {\r\n                    var row_num = values.row_num;\r\n                    var n = values.n;\r\n                    if (row_num && n) {\r\n                        var row = frm.doc.items[row_num-1];\r\n                        if (row) {\r\n                            for (var i=0; i<n; i++) {\r\n                                var new_row = frm.add_child('items');\r\n                                for (var key in row) {\r\n                                    if (key !== 'idx' && key !== 'name') {\r\n                                        new_row[key] = row[key];\r\n                                    }\r\n                                }\r\n                            }\r\n                            frm.refresh_field('items');\r\n                        } else {\r\n                            frappe.msgprint(__('Invalid Row Number'));\r\n                        }\r\n                    } else {\r\n                        frappe.msgprint(__('Row Number and Number of Duplicates are mandatory'));\r\n                    }\r\n                }, 'Duplicate Row');\r\n            }).addClass('btn-primary');\r\n        }\r\n    }\r\n});\r\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Case Detail",
+  "enabled": 1,
+  "modified": "2023-04-13 15:01:34.997216",
+  "module": null,
+  "name": "case detail",
+  "script": "frappe.ui.form.on('Case Detail', {\r\n    printBarcode: function(doc) {\r\n        frappe.run_serially([\r\n            function() {\r\n                return frappe.ui.form.qz_init({silent: true});\r\n            },\r\n            function() {\r\n                return frappe.ui.form.qz_get_printer_list();\r\n            },\r\n            function(printerList) {\r\n                return new Promise(function(resolve, reject) {\r\n                    frappe.prompt({\r\n                        label: 'Select a printer',\r\n                        fieldname: 'printer',\r\n                        fieldtype: 'Select',\r\n                        options: printerList,\r\n                    }, function(values) {\r\n                        resolve(values.printer);\r\n                    });\r\n                });\r\n            },\r\n            function(selectedPrinter) {\r\n                return frappe.ui.form.qz_connect({silent: true}).then(function() {\r\n                    const config = qz.configs.create(selectedPrinter);\r\n                    const printData = doc.items.map((item) => ({\r\n                        type: 'raw',\r\n                        format: 'plain',\r\n                        // data: `^XA\r\n                        //           ^FO25,0^BY1,2^BCN,50,N,N^FD${item.batch_no}^FS\r\n                        //           ^FO20,55^A0N,24,24^FD${item.batch_no}^FS\r\n                        //           ^FO20,80^A0N,24,24^FD${item.item_code}^FS\r\n                        //           ^FO190,105^A0N,24,24^FD${item.qty}^FS\r\n                        //           ^XZ`\r\n                        data: `N\\nq302\\nQ158,24\\nJF\\nD9\\nS2\\nB14,12,0,1,2,6,37,B,\"${item.batch_no}\"\\nA14,90,0,3,1,1,N,\"${item.item_code}\"\\nA14,120,0,3,1,1,N,\"${item.qty}\"\\nP1,1\\nN\\nFF`\r\n                         }));\r\n                        return qz.print(config, printData);\r\n\r\n                }).then(() => {\r\n                    console.log('Barcode printed successfully.');\r\n                }).catch(function (err) {\r\n                    console.error(err);\r\n                });\r\n            }\r\n        ]);\r\n    },\r\n\r\n    refresh: function(frm) {\r\n        frm.add_custom_button(__('Print Barcode'), function() {\r\n            frm.events.printBarcode(frm.doc);\r\n        });\r\n    },\r\n});\r\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Purchase Invoice",
+  "enabled": 1,
+  "modified": "2023-04-13 15:08:34.973650",
+  "module": null,
+  "name": "Purchase Invoice",
+  "script": "frappe.ui.form.on('Purchase Invoice', {\r\n    printBarcode: function(doc) {\r\n        let itemsToPrint = doc.items.filter(function(item) {\r\n            return item.batch_no !== undefined && item.batch_no !== \"\";\r\n        });\r\n        if (itemsToPrint.length === 0) {\r\n            frappe.throw(__('No items with batch numbers found.'));\r\n        }\r\n        frappe.run_serially([\r\n            function() {\r\n                return frappe.ui.form.qz_init({silent: true});\r\n            },\r\n            function() {\r\n                return frappe.ui.form.qz_get_printer_list();\r\n            },\r\n            function(printerList) {\r\n                return new Promise(function(resolve, reject) {\r\n                    frappe.prompt({\r\n                        label: 'Select a printer',\r\n                        fieldname: 'printer',\r\n                        fieldtype: 'Select',\r\n                        options: printerList,\r\n                    }, function(values) {\r\n                        resolve(values.printer);\r\n                    });\r\n                });\r\n            },\r\n            function(selectedPrinter) {\r\n                return frappe.ui.form.qz_connect({silent: true}).then(function() {\r\n                    const config = qz.configs.create(selectedPrinter);\r\n                    const printData = itemsToPrint.map((item) => ({\r\n                        type: 'raw',\r\n                        format: 'plain',\r\n                        // data: `^XA\r\n                        //           ^FO25,0^BY1,2^BCN,50,N,N^FD${item.batch_no}^FS\r\n                        //           ^FO20,55^A0N,24,24^FD${item.batch_no}^FS\r\n                        //           ^FO20,80^A0N,24,24^FD${item.item_code}^FS\r\n                        //           ^FO190,105^A0N,24,24^FD${item.qty}^FS\r\n                        //           ^XZ`\r\n                        data: `N\\nq302\\nQ158,24\\nJF\\nD9\\nS2\\nB14,12,0,1,2,6,37,B,\"${item.batch_no}\"\\nA14,90,0,3,1,1,N,\"${item.item_code}\"\\nA14,120,0,3,1,1,N,\"${item.qty}\"\\nP1,1\\nN\\nFF`\r\n\r\n                    }));\r\n                    return qz.print(config, printData);\r\n                }).then(() => {\r\n                    console.log('Barcode printed successfully.');\r\n                }).catch(function (err) {\r\n                    console.error(err);\r\n                });\r\n            }\r\n        ]);\r\n    },\r\n\r\n    refresh: function(frm) {\r\n        frm.add_custom_button(__('Print Barcode'), function() {\r\n            frm.events.printBarcode(frm.doc);\r\n        });\r\n    },\r\n});\r\n",
   "view": "Form"
  }
 ]
