@@ -178,10 +178,6 @@ doc_events = {
 	"Item": {
 		"before_validate": "gspl.doc_events.item.before_validate",
 	},
-	"Case Detail": {
-		"validate": "gspl.doc_events.case_detail.validate",
-		"before_save": "gspl.doc_events.case_detail.before_save",
-	},
 	"Purchase Invoice": {
 		"validate": "gspl.doc_events.purchase_invoice.validate",
 		"on_submit": "gspl.doc_events.purchase_invoice.on_submit",

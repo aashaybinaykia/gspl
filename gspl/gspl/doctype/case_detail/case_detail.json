@@ -11,13 +11,16 @@
   "new_item_code",
   "description",
   "warehouse",
+  "brand",
   "rack",
   "column_break_6",
   "status",
   "bundle_type",
   "contents",
+  "item_group",
   "enabled",
   "item_section",
+  "scan_barcode",
   "items",
   "section_break_4",
   "item_templates",
@@ -76,10 +79,11 @@
   },
   {
    "fieldname": "bundle_type",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Bundle Type",
+   "options": "Item",
    "read_only": 1
   },
   {
@@ -134,14 +138,39 @@
    "fieldname": "total_amount",
    "fieldtype": "Currency",
    "label": "Total Amount"
+  },
+  {
+   "fieldname": "scan_barcode",
+   "fieldtype": "Data",
+   "label": "Scan Barcode",
+   "options": "Barcode"
+  },
+  {
+   "fetch_from": "bundle_type.brand",
+   "fieldname": "brand",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Brand",
+   "options": "Brand"
+  },
+  {
+   "fetch_from": "bundle_type.item_group",
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Item Group",
+   "options": "Item Group"
   }
  ],
  "icon": "fa fa-sitemap",
  "links": [],
- "modified": "2023-03-23 15:25:31.299133",
+ "modified": "2023-05-05 13:01:12.606978",
  "modified_by": "Administrator",
  "module": "GSPL",
  "name": "Case Detail",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
@@ -177,5 +206,6 @@
  ],
  "sort_field": "modified",
  "sort_order": "ASC",
+ "states": [],
  "track_changes": 1
 }
