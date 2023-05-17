@@ -136,6 +136,13 @@ def get_columns(filters: StockBalanceFilter):
 			"width": 100,
 		},
 		{
+			"label": _("Brand"),
+			"fieldname": "brand",
+			"fieldtype": "Link",
+			"options": "Brand",
+			"width": 100,
+		},
+		{
 			"label": _("Warehouse"),
 			"fieldname": "warehouse",
 			"fieldtype": "Link",
