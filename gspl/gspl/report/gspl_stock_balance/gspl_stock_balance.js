@@ -86,6 +86,12 @@ frappe.query_reports["GSPL Stock Balance"] = {
 			"options": "UOM"
 		},
 		{
+			"fieldname":"group_by",
+			"label": __("Group By"),
+			"fieldtype": "Select",
+			"options": "\nItem Group\nBrand",
+		},
+		{
 			"fieldname": "show_variant_attributes",
 			"label": __("Show Variant Attributes"),
 			"fieldtype": "Check"

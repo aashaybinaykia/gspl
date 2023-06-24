@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional, TypedDict
 import frappe
 from frappe import _
 from frappe.query_builder.functions import Coalesce, CombineDatetime
-from frappe.utils import cint, date_diff, flt, getdate
+from frappe.utils import cint, date_diff, flt, getdate, logger
 from frappe.utils.nestedset import get_descendants_of
 
 import erpnext
@@ -16,6 +16,10 @@ from erpnext.stock.doctype.inventory_dimension.inventory_dimension import get_in
 from erpnext.stock.doctype.warehouse.warehouse import apply_warehouse_filter
 from erpnext.stock.report.stock_ageing.stock_ageing import FIFOSlots, get_average_age
 from erpnext.stock.utils import add_additional_uom_columns, is_reposting_item_valuation_in_progress
+
+
+frappe.utils.logger.set_log_level("DEBUG")
+logger = frappe.logger("gspl_reports", allow_site=True, file_count=10)
 
 
 class StockBalanceFilter(TypedDict):
@@ -28,6 +32,7 @@ class StockBalanceFilter(TypedDict):
 	warehouse: Optional[str]
 	warehouse_type: Optional[str]
 	include_uom: Optional[str]  # include extra info in converted UOM
+	group_by: Optional[str]
 	show_stock_ageing_data: bool
 	show_variant_attributes: bool
 
@@ -46,8 +51,13 @@ def execute(filters: Optional[StockBalanceFilter] = None):
 		company_currency = frappe.db.get_single_value("Global Defaults", "default_currency")
 
 	include_uom = filters.get("include_uom")
+	data = []
 	columns = get_columns(filters)
 	items = get_items(filters)
+
+	if not len(items):
+		return columns, data
+
 	sle = get_stock_ledger_entries(filters, items)
 
 	if filters.get("show_stock_ageing_data"):
@@ -62,7 +72,6 @@ def execute(filters: Optional[StockBalanceFilter] = None):
 	item_map = get_item_details(items, sle, filters)
 	item_reorder_detail_map = get_item_reorder_details(item_map.keys())
 
-	data = []
 	conversion_factors = {}
 
 	_func = itemgetter(1)
@@ -114,42 +123,133 @@ def execute(filters: Optional[StockBalanceFilter] = None):
 			data.append(report_data)
 
 	add_additional_uom_columns(columns, data, include_uom, conversion_factors)
+	# logger.info(data)
+
+	if filters.get("group_by"):
+		group_by = filters.get("group_by")
+		group_by_key_map = {
+			"Item Group": "item_group",
+			"Brand": "brand",
+		}
+		group_by_key = group_by_key_map.get(group_by)
+
+		group_data = {}
+		for row in data:
+			group_key = row.get(group_by_key)
+			group_data.setdefault(group_key, [])
+			group_data[group_key].append(row)
+
+		new_data = []
+		for group_key, items in group_data.items():
+			group_report_data = {
+				group_by_key: items[0].get(group_by_key),
+				"currency": company_currency,
+				"company": items[0]['company'],
+				"stock_uom": items[0]['stock_uom'],
+
+				# Group fields
+				"reorder_level": 0,
+				"reorder_qty": 0,
+				"opening_qty": 0.0,
+				"opening_val": 0.0,
+				"in_qty": 0.0,
+				"in_val": 0.0,
+				"out_qty": 0.0,
+				"out_val": 0.0,
+				"bal_qty": 0.0,
+				"bal_val": 0.0,
+				"val_rate": 0.0,
+			}
+
+			if group_by == "Item Group" and filters.get("brand"):
+				k = group_by_key_map.get("Brand")
+				group_report_data[k] = items[0].get(k)
+			elif group_by == "Brand" and filters.get("item_group"):
+				k = group_by_key_map.get("Item Group")
+				group_report_data[k] = items[0].get(k)
+			
+			# logger.info(group_report_data)
+			for item in items:
+				group_report_data["reorder_level"] += item["reorder_level"]
+				group_report_data["reorder_qty"] += item["reorder_qty"]
+				group_report_data["opening_qty"] += item["opening_qty"]
+				group_report_data["opening_val"] += item["opening_val"]
+				group_report_data["in_qty"] += item["in_qty"]
+				group_report_data["in_val"] += item["in_val"]
+				group_report_data["out_qty"] += item["out_qty"]
+				group_report_data["out_val"] += item["out_val"]
+				group_report_data["bal_qty"] += item["bal_qty"]
+				group_report_data["bal_val"] += item["bal_val"]
+				group_report_data["val_rate"] += item["val_rate"]
+
+			new_data.append(group_report_data)
+
+		return columns, new_data
+
 	return columns, data
 
 
 def get_columns(filters: StockBalanceFilter):
 	"""return columns"""
-	columns = [
-		{
-			"label": _("Item"),
-			"fieldname": "item_code",
-			"fieldtype": "Link",
-			"options": "Item",
-			"width": 100,
-		},
-		{"label": _("Item Name"), "fieldname": "item_name", "width": 150},
-		{
-			"label": _("Item Group"),
-			"fieldname": "item_group",
-			"fieldtype": "Link",
-			"options": "Item Group",
-			"width": 100,
-		},
-		{
-			"label": _("Brand"),
-			"fieldname": "brand",
-			"fieldtype": "Link",
-			"options": "Brand",
-			"width": 100,
-		},
-		{
-			"label": _("Warehouse"),
-			"fieldname": "warehouse",
-			"fieldtype": "Link",
-			"options": "Warehouse",
-			"width": 100,
-		},
-	]
+
+	if filters.get("group_by"):
+		group_by = filters.get("group_by")
+		group_by_column_map = {
+			"Item Group": {
+				"label": _("Item Group"),
+				"fieldname": "item_group",
+				"fieldtype": "Link",
+				"options": "Item Group",
+				"width": 100,
+			},
+			"Brand": {
+				"label": _("Brand"),
+				"fieldname": "brand",
+				"fieldtype": "Link",
+				"options": "Brand",
+				"width": 100,
+			},
+		}
+		group_by_column = group_by_column_map.get(group_by)
+		columns = [group_by_column]
+
+		if group_by == "Item Group" and filters.get("brand"):
+			columns.append(group_by_column_map.get("Brand"))
+		elif group_by == "Brand" and filters.get("item_group"):
+			columns.append(group_by_column_map.get("Item Group"))
+
+	else:
+		columns = [
+			{
+				"label": _("Item"),
+				"fieldname": "item_code",
+				"fieldtype": "Link",
+				"options": "Item",
+				"width": 100,
+			},
+			{"label": _("Item Name"), "fieldname": "item_name", "width": 150},
+			{
+				"label": _("Item Group"),
+				"fieldname": "item_group",
+				"fieldtype": "Link",
+				"options": "Item Group",
+				"width": 100,
+			},
+			{
+				"label": _("Brand"),
+				"fieldname": "brand",
+				"fieldtype": "Link",
+				"options": "Brand",
+				"width": 100,
+			},
+			{
+				"label": _("Warehouse"),
+				"fieldname": "warehouse",
+				"fieldtype": "Link",
+				"options": "Warehouse",
+				"width": 100,
+			},
+		]
 
 	for dimension in get_inventory_dimensions():
 		columns.append(
