@@ -1,0 +1,30 @@
+{
+ "add_total_row": 1,
+ "columns": [],
+ "creation": "2024-04-10 14:57:06.614952",
+ "disable_prepared_report": 1,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "letter_head": "Gautam Syntex Pvt Ltd",
+ "modified": "2024-04-12 12:06:46.802580",
+ "modified_by": "Administrator",
+ "module": "GSPL",
+ "name": "GSPL Sales Partner wise Payment Received",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Payment Entry",
+ "report_name": "GSPL Sales Partner wise Payment Received",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "Accounts Manager"
+  }
+ ]
+}

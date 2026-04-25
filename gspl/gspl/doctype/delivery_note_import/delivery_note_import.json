@@ -1,0 +1,84 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "prompt",
+ "creation": "2023-10-10 11:34:43.663359",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "import_type",
+  "section_break_mzrhb",
+  "total_delivery_notes_created",
+  "column_break_aeaow",
+  "last_created_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "import_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Import Type",
+   "options": "\nWith Sales Order\nWithout Sales Order",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_mzrhb",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_aeaow",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_delivery_notes_created",
+   "fieldtype": "Int",
+   "label": "Total Delivery Notes Created",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_created_on",
+   "fieldtype": "Datetime",
+   "label": "Last Created On",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-10-10 11:36:15.290456",
+ "modified_by": "Administrator",
+ "module": "GSPL",
+ "name": "Delivery Note Import",
+ "naming_rule": "Set by user",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,60 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-01-16 16:14:30.750211",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "total_items_created",
+  "total_variants_created",
+  "column_break_utafh",
+  "total_batches_created"
+ ],
+ "fields": [
+  {
+   "fieldname": "total_items_created",
+   "fieldtype": "Int",
+   "label": "Total Items Created"
+  },
+  {
+   "fieldname": "total_variants_created",
+   "fieldtype": "Int",
+   "label": "Total Variants Created"
+  },
+  {
+   "fieldname": "column_break_utafh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_batches_created",
+   "fieldtype": "Int",
+   "label": "Total Batches Created"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-01-16 16:14:30.750211",
+ "modified_by": "Administrator",
+ "module": "GSPL",
+ "name": "Purchase Order Import",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

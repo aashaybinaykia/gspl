@@ -13,6 +13,17 @@ import ast
 frappe.utils.logger.set_log_level("DEBUG")
 logger = frappe.logger("api_so", allow_site=True, file_count=50)
 
+@frappe.whitelist()
+def bulk_close_sales_orders(sales_orders):
+    sales_orders = json.loads(sales_orders)
+    for so in sales_orders:
+        so_doc = frappe.get_doc("Sales Order", so['name'])
+        if so_doc.docstatus == 1 and so_doc.status != 'Closed' and so_doc.status != 'Completed':
+            so_doc.update_status('Closed')
+            so_doc.save()
+            frappe.db.commit()
+    return True
+
 def update_prices(ic, comp, cust, curr, pl, td, prj):
     arguments = {
         	"item_code": ic,
@@ -122,6 +133,14 @@ def before_validate(doc, method):
             add_child_to_so(doc, row, item_details)
 
     # doc.run_method("calculate_taxes_and_totals")
+
+@frappe.whitelist()
+def before_submit(doc, method):
+        if doc.customer and doc.transporter:
+            customer_doc = frappe.get_doc('Customer', doc.customer)
+            if customer_doc.default_transporter != doc.transporter:
+                customer_doc.default_transporter = doc.transporter
+                customer_doc.save()
 
 
 

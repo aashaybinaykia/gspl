@@ -23,8 +23,8 @@ logger = frappe.logger("api", allow_site=True, file_count=50)
 @frappe.whitelist()
 def validate(doc, method):
 
-    if frappe.db.exists(doc.doctype, doc.name) and frappe.db.get_value(doc.doctype, doc.name, 'disable') == doc.disable:
-        frappe.throw("Cannot Change Price Rule. Please Delete and Recreate")
+    # if frappe.db.exists(doc.doctype, doc.name) and frappe.db.get_value(doc.doctype, doc.name, 'disable') == doc.disable:
+    #     frappe.throw("Cannot Change Price Rule. Please Delete and Recreate")
 
     title_parts = []
 

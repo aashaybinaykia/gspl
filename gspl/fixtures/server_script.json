@@ -1,0 +1,17 @@
+[
+ {
+  "allow_guest": 0,
+  "api_method": null,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Server Script",
+  "doctype_event": "Before Insert",
+  "event_frequency": "All",
+  "modified": "2025-05-10 15:22:07.659210",
+  "module": null,
+  "name": "Restrict Journal Entry for Employee to HR Manager",
+  "reference_doctype": "Journal Entry",
+  "script": "def has_access(doc, user):\n    from frappe import get_roles\n\n    roles = frappe.get_roles(user)\n\n    if \"HR Manager\" in roles:\n        return True\n\n    for entry in doc.accounts:\n        if entry.party_type == \"Employee\":\n            return False\n    return True\n",
+  "script_type": "Permission Query"
+ }
+]

@@ -16,6 +16,8 @@ def validate_item_variant_for_meters_uom(doc):
     if doc.stock_uom == 'Meter':
         if not doc.has_variants and not doc.variant_of:
             frappe.throw(_("Either has_variants should be true, or variant_of should be set, if stock_uom is 'Meters'"))
+    elif doc.item_group == "Bottom":
+        pass
     else:
         if doc.has_variants:
             frappe.throw(_("has_variants should be false, if stock_uom is not 'Meters'"))

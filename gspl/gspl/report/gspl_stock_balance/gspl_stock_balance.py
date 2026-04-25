@@ -393,6 +393,8 @@ def apply_conditions(query, filters):
 def get_stock_ledger_entries(filters: StockBalanceFilter, items: List[str]) -> List[SLEntry]:
 	sle = frappe.qb.DocType("Stock Ledger Entry")
 
+	batch = frappe.qb.DocType("Batch")
+
 	query = (
 		frappe.qb.from_(sle)
 		.select(
@@ -409,12 +411,19 @@ def get_stock_ledger_entries(filters: StockBalanceFilter, items: List[str]) -> L
 			sle.voucher_no,
 			sle.stock_value,
 			sle.batch_no,
+			batch.content.as_("content")  # SELECT content
 		)
+		.left_join(batch).on(batch.name == sle.batch_no)  # JOIN with Batch
 		.where((sle.docstatus < 2) & (sle.is_cancelled == 0))
 		.orderby(CombineDatetime(sle.posting_date, sle.posting_time))
 		.orderby(sle.creation)
 		.orderby(sle.actual_qty)
 	)
+
+	# Efficient content filter only if provided
+	if filters.get("content"):
+		query = query.where(batch.content == filters["content"])
+
 
 	inventory_dimension_fields = get_inventory_dimension_fields()
 	if inventory_dimension_fields:

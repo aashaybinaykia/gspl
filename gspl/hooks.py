@@ -166,6 +166,12 @@ doc_events = {
 	"Address": {
 		"before_save": "gspl.doc_events.address.before_save",
 	},
+    "Batch": {
+		"before_save": "gspl.doc_events.batch.before_save",
+	},
+    "Customer": {
+		"before_validate": "gspl.doc_events.customer.before_validate"
+	},
 	"Delivery Note": {
 		"before_naming": "gspl.doc_events.delivery_note.before_naming",
 		"before_save": "gspl.doc_events.delivery_note.before_save",
@@ -176,13 +182,19 @@ doc_events = {
 	"Item": {
 		"before_validate": "gspl.doc_events.item.before_validate",
 	},
+	"Item Price": {
+		"before_save": "gspl.doc_events.item_price.before_save",
+	},
 	"Purchase Invoice": {
 		"validate": "gspl.doc_events.purchase_invoice.validate",
+		"before_validate": "gspl.doc_events.purchase_invoice.before_validate",
 		"on_submit": "gspl.doc_events.purchase_invoice.on_submit",
 		"before_cancel": "gspl.doc_events.purchase_invoice.before_cancel",
+		"autoname": "gspl.doc_events.purchase_invoice.autoname"
 	},
 	"Sales Order": {
 		"before_validate": "gspl.doc_events.sales_order.before_validate",
+		"before_submit": "gspl.doc_events.sales_order.before_submit"
 	},
 	"Pricing Rule": {
 		"validate": "gspl.doc_events.pricing_rule.validate",
@@ -190,6 +202,7 @@ doc_events = {
 	"Sales Invoice": {
 		"autoname": "gspl.doc_events.sales_invoice.autoname",
 		"before_validate": "gspl.doc_events.sales_invoice.before_validate",
+		"validate": "gspl.doc_events.sales_invoice.validate",
 	},
 	"Stock Entry": {
 		"before_validate": "gspl.doc_events.stock_entry.before_validate",
@@ -201,3 +214,9 @@ doc_events = {
 		"on_submit": "gspl.doc_events.stock_ledger_entry.on_submit",
 	},
 }
+fixtures = [
+    "Custom Field",
+    "Property Setter",
+    "Client Script",
+    "Server Script"
+]

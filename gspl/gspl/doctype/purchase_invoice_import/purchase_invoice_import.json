@@ -22,7 +22,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Import Type",
-   "options": "\nOthers\nVimal\nArvind",
+   "options": "\nOthers\nVimal\nGG\nArvind\nTrendy",
    "reqd": 1
   },
   {
@@ -60,7 +60,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-04-21 15:51:58.109714",
+ "modified": "2023-12-12 15:32:42.308909",
  "modified_by": "Administrator",
  "module": "GSPL",
  "name": "Purchase Invoice Import",

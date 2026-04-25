@@ -1,0 +1,226 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2025-03-01 16:58:43.676326",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_vsmts",
+  "naming_series",
+  "from",
+  "column_break_qzzpx",
+  "to",
+  "section_break_tjmjf",
+  "date",
+  "column_break_0djdd",
+  "eway_bill_number",
+  "section_break_m79b7",
+  "place_of_supply",
+  "column_break_sawzi",
+  "vehicle_no",
+  "column_break_dwmgq",
+  "driver_name",
+  "section_break_zjnar",
+  "delivery_notes",
+  "column_break_gcevo",
+  "stock_entries",
+  "case_details",
+  "total_cases",
+  "section_break_xsfug",
+  "road_challan_item_wise_details",
+  "section_break_videl",
+  "road_challan_hsn_wise_details",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_vsmts",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "from",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "From",
+   "options": "Address",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_qzzpx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "to",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "To",
+   "options": "Address",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_tjmjf",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_0djdd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "eway_bill_number",
+   "fieldtype": "Int",
+   "label": "EWay Bill Number"
+  },
+  {
+   "fieldname": "section_break_m79b7",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "West Bengal",
+   "fieldname": "place_of_supply",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Place of Supply",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_sawzi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "vehicle_no",
+   "fieldtype": "Data",
+   "label": "Vehicle No"
+  },
+  {
+   "fieldname": "column_break_dwmgq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "driver_name",
+   "fieldtype": "Data",
+   "label": "Driver Name"
+  },
+  {
+   "fieldname": "section_break_zjnar",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "delivery_notes",
+   "fieldtype": "Table",
+   "label": "Delivery Notes",
+   "options": "Road Challan Delivery Notes"
+  },
+  {
+   "fieldname": "stock_entries",
+   "fieldtype": "Table",
+   "label": "Stock Entries",
+   "options": "Road Challan Stock Entry"
+  },
+  {
+   "fieldname": "section_break_xsfug",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "road_challan_item_wise_details",
+   "fieldtype": "Table",
+   "label": "Road Challan Item Wise Details",
+   "options": "Road Challan Item Wise Details",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_gcevo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "case_details",
+   "fieldtype": "Table",
+   "label": "Case Details",
+   "options": "Road Challan Case Detail"
+  },
+  {
+   "fieldname": "section_break_videl",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "road_challan_hsn_wise_details",
+   "fieldtype": "Table",
+   "label": "Road Challan HSN Wise Details",
+   "options": "Road Challan HSN Wise Details",
+   "read_only": 1
+  },
+  {
+   "default": "RC-.FY.-.####",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Series",
+   "options": "RC-.FY.-.####"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Road Challan",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_cases",
+   "fieldtype": "Int",
+   "label": "Total Cases",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-03-08 16:33:18.404897",
+ "modified_by": "Administrator",
+ "module": "GSPL",
+ "name": "Road Challan",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

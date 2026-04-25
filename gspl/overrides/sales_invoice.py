@@ -55,3 +55,8 @@ class CustomSalesInvoice(SalesInvoice):
             self.validate_rate_with_reference_doc(
                 [["Sales Order", "sales_order", "so_detail"], ["Delivery Note", "delivery_note", "dn_detail"]]
             )
+
+    def update_billing_status_in_dn(self, update_modified=True):
+        if self.is_return and self.reason_for_issuing_document == "02-Post Sale Discount":
+            return
+        super().update_billing_status_in_dn(update_modified=update_modified)

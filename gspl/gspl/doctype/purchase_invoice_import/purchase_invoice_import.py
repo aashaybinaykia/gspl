@@ -15,6 +15,7 @@ from frappe.utils import logger
 import json
 import ast
 import traceback
+from gspl.doc_events.purchase_invoice import get_naming_series
 
 frappe.utils.logger.set_log_level("DEBUG")
 logger = frappe.logger("api", allow_site=True, file_count=50)
@@ -26,7 +27,9 @@ class PurchaseInvoiceImport(Document):
 		arvind_url = 'https://docs.google.com/spreadsheets/d/1ffZ04U9U0vyTORGEKPCHB3ONeKfUMZ4VVfPvpfMsy_U/edit#gid=2027730903'
 		vimal_url = 'https://docs.google.com/spreadsheets/d/1ffZ04U9U0vyTORGEKPCHB3ONeKfUMZ4VVfPvpfMsy_U/edit#gid=229283959'
 		others_url = 'https://docs.google.com/spreadsheets/d/1ffZ04U9U0vyTORGEKPCHB3ONeKfUMZ4VVfPvpfMsy_U/edit#gid=0'
-		url = url = arvind_url if doc.import_type == 'Arvind' else vimal_url if doc.import_type == 'Vimal' else others_url if doc.import_type == 'Others' else ''
+		gg_url = 'https://docs.google.com/spreadsheets/d/1ffZ04U9U0vyTORGEKPCHB3ONeKfUMZ4VVfPvpfMsy_U/edit#gid=227369162'
+		trendy_url = 'https://docs.google.com/spreadsheets/d/1ffZ04U9U0vyTORGEKPCHB3ONeKfUMZ4VVfPvpfMsy_U/edit#gid=1319239144'
+		url = url = trendy_url if doc.import_type == 'Trendy' else gg_url if doc.import_type == 'GG' else arvind_url if doc.import_type == 'Arvind' else vimal_url if doc.import_type == 'Vimal' else others_url if doc.import_type == 'Others' else ''
 		content = None
 		content = get_csv_content_from_google_sheets(url)
 		data = read_csv_content(content)
@@ -41,9 +44,9 @@ class PurchaseInvoiceImport(Document):
 
 			i_dict_list.append(row_dict)
 
-		if doc.import_type == "Arvind":
+		if doc.import_type == "Arvind" or doc.import_type == 'Trendy':
 			dict_list = doc.get_arvind_dict(i_dict_list)
-		elif doc.import_type == 'Vimal':
+		elif doc.import_type == 'Vimal' or doc.import_type == 'GG':
 			dict_list = doc.get_vimal_dict(i_dict_list)
 		elif doc.import_type == 'Others':
 			for row_dict in i_dict_list:
@@ -58,6 +61,22 @@ class PurchaseInvoiceImport(Document):
 		item_codes = set([row_dict['Sort Number'] for row_dict in dict_list])
 		existing_item_codes = set([item['name'] for item in frappe.get_all('Item')])
 		new_item_codes = {code.upper() for code in item_codes} - {code.upper() for code in existing_item_codes}
+
+
+		# Find duplicate item codes
+		duplicate_item_codes = existing_item_codes.intersection(item_codes)
+
+		# Iterate through duplicate items
+		for item_code in duplicate_item_codes:
+			# Retrieve brand from dict_list
+			brand_dict_list = next((row_dict['Brand'] for row_dict in dict_list if row_dict['Sort Number'] == item_code), None)
+			# Retrieve brand from the database
+			existing_brand = frappe.get_value('Item', {'name': item_code}, 'brand')
+
+			# Check if brands are different
+			if brand_dict_list.upper() != existing_brand.upper():
+				frappe.throw(f"The brand of item {item_code} in dict_list is different from the existing brand")
+
 
 
 		items_items = []
@@ -150,7 +169,7 @@ class PurchaseInvoiceImport(Document):
 
 			# Implementing the logic
 			dict1 = {'Supplier Name': '', 'Supplier Invoice No': '', 'INVOICE_DATE': '', 'LR Num': '', 'LR Date': '',
-         'case_number': '', 'Sort Number': '', 'Shade': '', 'Barcode': '', 'Brand': 'Arvind', 'HSN_CODE': '',
+         'case_number': '', 'Sort Number': '', 'Shade': '', 'Barcode': '', 'HSN_CODE': '',
          'Quantity': '', 'Rate': '', 'stock_uom': 'Meter', 'Accepted Warehouse': 'Kanhaiya Express - GSPL', 'Final Item': ''}
 			dict1['Supplier Name'] = 'Arvind Limited'
 			dict1['Supplier Invoice No'] = dict2['Plant Invoice / Line'].split('/')[0]
@@ -164,6 +183,12 @@ class PurchaseInvoiceImport(Document):
 			dict1['Barcode'] = dict2['Batch No.']
 			dict1['HSN_CODE'] = dict2['HSN Code']
 			dict1['Quantity'] = dict2['Batch Qty.']
+			if doc.import_type == 'Arvind':
+				dict1['Brand'] = 'Arvind'
+			elif doc.import_type == 'Trendy':
+				dict1['Brand'] = 'Trendy'
+			else:
+				pass
 			if float(dict2['Net Rate Per mts']) != 0:
 				dict1['Rate'] = dict2['Net Rate Per mts']
 			else:
@@ -197,10 +222,14 @@ class PurchaseInvoiceImport(Document):
 			dict1['LR Date'] = dict3['TRANSPORTER_CN_DATE']
 			dict1['case_number'] = dict3['CASE_NO'][7:]
 			material_split = dict3['MATERIAL'].split('F')
-			dict1['Sort Number'] = material_split[1][3:].lstrip('0')
+			if doc.import_type == 'Vimal':
+				dict1['Sort Number'] = material_split[1][2:].lstrip('0')
+				dict1['Brand'] = 'Vimal'	
+			else:
+				dict1['Sort Number'] = material_split[1]
+				dict1['Brand'] = 'GG'
 			dict1['Shade'] = material_split[2].lstrip('0')
 			dict1['Barcode'] = dict3['BARCODE']
-			dict1['Brand'] = 'Vimal'
 			dict1['HSN_CODE'] = dict3['HSN_CODE'].replace(" ", "")
 			dict1['Quantity'] = dict3['GROSS_METERS']
 			dict1['Rate'] = float(dict3['GROSS_AMT']) / (1.05 * float(dict3['GROSS_METERS']))
@@ -258,12 +287,13 @@ class PurchaseInvoiceImport(Document):
 
 		for item in variants:
 			try:
+				existing_group = frappe.get_value('Item', {'name': item['variant_of']}, 'item_group')
 				# create the item
 				new_item = frappe.get_doc({
 					'doctype': 'Item',
 					'item_code': item['item_code'],
 					'item_name': item['item_name'],
-					'item_group': item['item_group'],
+					'item_group': "Temp",
 					'gst_hsn_code': item['gst_hsn_code'],
 					'variant_of': item['variant_of'],
 					'brand': item['brand'],
@@ -338,6 +368,7 @@ class PurchaseInvoiceImport(Document):
 					'qty': row['Quantity'],
 					'price_list_rate': row['Rate'],
 					'uom': row['stock_uom'],
+					'brand': row['Brand'],
 					'batch_no': row['Barcode'],
 					'case_number': row['case_number'],
 					'expense_account': 'Stock In Hand - GSPL',
@@ -358,6 +389,7 @@ class PurchaseInvoiceImport(Document):
 							'item_code': row['Final Item'],
 							'item_name': row['Final Item'],
 							'qty': row['Quantity'],
+							'brand': row['Brand'],
 							'price_list_rate': row['Rate'],
 							'uom': row['stock_uom'],
 							'batch_no': row['Barcode'],
@@ -394,6 +426,7 @@ class PurchaseInvoiceImport(Document):
 				# doc.taxes_and_charges = 'GST 18%'
 				# doc.tax_id = 'GST 18%'
 				temp_items = supplier_invoice['items']
+
 				for item in temp_items:
 					d.append('items', {
 							'item_code': item['item_code'],
@@ -404,11 +437,17 @@ class PurchaseInvoiceImport(Document):
 							'uom': item['uom'],
 							'batch_no': item['batch_no'],
 							'case_number': item['case_number'],
+							'brand': item['brand'],
 							'expense_account': 'Stock In Hand - GSPL',
 							'warehouse': item['warehouse']
 						}
 					)
-				d.save()
+
+				naming_series = None
+				naming_series = get_naming_series(d)
+				if naming_series:
+					d.naming_series = naming_series
+				d.insert()
 				total_created += 1
 
 

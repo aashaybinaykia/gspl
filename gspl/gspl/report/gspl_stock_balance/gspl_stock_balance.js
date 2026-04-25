@@ -13,6 +13,12 @@ frappe.query_reports["GSPL Stock Balance"] = {
 			"default": frappe.defaults.get_default("company")
 		},
 		{
+			"fieldname": "content",
+			"label": __("Content"),
+			"fieldtype": "Select",
+			"options": "\nShort Length\nThaan\nCombi"
+		},
+		{
 			"fieldname":"from_date",
 			"label": __("From Date"),
 			"fieldtype": "Date",
