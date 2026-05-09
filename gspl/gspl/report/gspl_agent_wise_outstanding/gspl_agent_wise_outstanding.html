@@ -1,0 +1,61 @@
+<div class="report-header text-center">
+    <h2 style="font-weight: bold;">GSPL Agent Wise Outstanding</h2>
+    <p>Up To {%= frappe.datetime.str_to_user(filters.to_date) %}</p>
+</div>
+
+{% var grouped_data = {}; %}
+{% for(var i=0, l=data.length; i<l; i++) { %}
+    {% var row = data[i]; %}
+    {% var agent = row.agent || "No Agent Linked"; %}
+    {% var customer = row.customer; %}
+    
+    {% if(!grouped_data[agent]) { grouped_data[agent] = {}; } %}
+    {% if(!grouped_data[agent][customer]) { grouped_data[agent][customer] = []; } %}
+    
+    {% grouped_data[agent][customer].push(row); %}
+{% } %}
+
+{% for(var agent in grouped_data) { %}
+    <div style="border-bottom: 2px solid #000; margin-top: 30px; padding-bottom: 5px;">
+        <h4 class="text-center"><strong>{%= agent.toUpperCase() %}</strong></h4>
+    </div>
+
+    {% var customers = grouped_data[agent]; %}
+    {% for(var customer in customers) { %}
+        <div style="margin-top: 15px; padding: 5px 0;">
+            <strong>{%= customer.toUpperCase() %}</strong>
+        </div>
+        <table class="table table-condensed" style="width: 100%; border-bottom: 1px solid #ddd;">
+            <thead>
+                <tr style="border-top: 2px solid #000; border-bottom: 2px solid #000;">
+                    <th style="width: 15%;">DATE</th>
+                    <th style="width: 25%;">SR. NO.</th>
+                    <th style="width: 20%; text-align: right;">AMOUNT.</th>
+                    <th style="width: 10%; text-align: center;">DrCr</th>
+                    <th style="width: 20%; text-align: right;">BAL. AMT.</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% var rows = customers[customer]; %}
+                {% var cust_bal_total = 0; %}
+                
+                {% for(var j=0, k=rows.length; j<k; j++) { %}
+                    {% var r = rows[j]; %}
+                    <tr>
+                        <td>{%= frappe.datetime.str_to_user(r.posting_date) %}</td>
+                        <td>{%= r.voucher_no %}</td>
+                        <td style="text-align: right;">{%= format_currency(Math.abs(r.amount)) %}</td>
+                        <td style="text-align: center;">{%= r.dr_cr %}</td>
+                        <td style="text-align: right;">{%= format_currency(Math.abs(r.outstanding_amount)) %}</td>
+                    </tr>
+                    {% cust_bal_total += flt(r.outstanding_amount); %}
+                {% } %}
+                
+                <tr style="border-top: 1px solid #000; font-weight: bold;">
+                    <td colspan="4">ACCOUNT WISE TOTAL ({%= cust_bal_total >= 0 ? 'D' : 'C' %}) :</td>
+                    <td style="text-align: right;">{%= format_currency(Math.abs(cust_bal_total)) %}</td>
+                </tr>
+            </tbody>
+        </table>
+    {% } %}
+{% } %}

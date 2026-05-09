@@ -42,118 +42,92 @@ def on_cancel(doc, method):
         update_case_detail(doc, "Sold")
 
 @frappe.whitelist()
-def validate(doc, method):
-    if doc.is_return:
+def validate(doc, method=None):
+    # 1. Basic Initializations using .get() for v16 safety
+    if doc.get("is_return"):
         doc.issue_credit_note = 1
 
-    doc.total_batches = len(doc.items)
+    doc.total_batches = len(doc.get("items", []))
 
-    ### Section 1: This section ensures that any item (if part of a case) is not accidentally deleted from the items table. 
-                    # Essentially, all batch_no of a case present in the case_Detail table should be present in the items tables
-    
-    ### Section 2: This section sets the batch qty of each row
-    ### Section 3: This section links the delivery note item to its corresponding sales order item and populates certain fields accordingly
-    ### Section 3b: If extra items (not in sales order) from a case are present, populate fields according to other items from the same case.
     master_batches = set()
-
     case_dict = {}
     case_detail_rows_pending = False
 
-    sales_order_item_table = []
-    sales_order_exists = False
-    if (doc.sales_order and doc.sales_order != ""):
-        sales_order_item_table = frappe.get_doc('Sales Order', doc.sales_order).items
-        sales_order_exists = True
+    # 2. Map Available SO Items into a Dictionary (O(1) Lookup)
+    # Streamlined: 1-to-1 mapping since item_codes are unique per SO
+    available_so_items = {}
+    if doc.get("sales_order"):
+        so_doc = frappe.get_doc('Sales Order', doc.sales_order)
+        for so_row in so_doc.get("items", []):
+            if so_row.qty > so_row.delivered_qty:
+                available_so_items[so_row.item_code] = so_row
 
-    # Iterate through all rows in delivery note
-    # And while looping through all items, 
-    # 1. Get all batches from item table - master_batches
-    # 2. Set batch qty
-    # 3. If sales order is found, set so_detail value for these items (so_detail is the sales order item corresponding to the delivery note item)
-    # 4. once so_detail is set, if case number is present in the row, add it to a hashmap for later use
-
-    for row in doc.items:
+    # 3. Main Item Iteration
+    for row in doc.get("items", []):
         if row.rate == 0:
-            frappe.throw(_("Item "+str(row.item_code)+" Has Rate 0"))
+            frappe.throw(_(f"Item {row.item_code} has a Rate of 0"))
 
-        # Part 1
-        if row.batch_no is not None: master_batches.add(str(row.batch_no)) 
-
-        # Part 2
-        if row.batch_no is not None: 
+        if row.batch_no:
+            master_batches.add(str(row.batch_no))
+            
+            # Fetch and set real-time warehouse batch quantity
             batch_qty = get_batch_qty(batch_no=row.batch_no, warehouse=row.warehouse, item_code=row.item_code)
-            if batch_qty>0 :
+            if batch_qty > 0:
                 row.qty = batch_qty
                 row.stock_qty = row.qty * row.conversion_factor             
         
-        # Part 3
-        if sales_order_exists:
-            if not row.so_detail:
-                for so_row in sales_order_item_table:
-                    if  so_row.delivered_qty - so_row.qty >= 0:
-                        sales_order_item_table.remove(so_row)
-                        continue
+        # Section 3: Link to Sales Order
+        if doc.get("sales_order") and not row.so_detail:
+            # Direct dictionary lookup
+            so_row = available_so_items.get(row.item_code)
 
-                    if so_row.item_code == row.item_code: # Check if this row's item code is same as row.itemcode
-                        row.so_detail = so_row.name
-                        row.against_sales_order = doc.sales_order
-                        row.price_list_rate = so_row.price_list_rate
-                        row.base_price_list_rate = so_row.base_price_list_rate
-                        row.discount_percentage = so_row.discount_percentage
-                        row.discount_amount = so_row.discount_amount
-                        row.rate = so_row.rate
-                        row.price_list = so_row.price_list
-                        row.pricing_rules = ""
+            if so_row:
+                row.so_detail = so_row.name
+                row.against_sales_order = doc.sales_order
+                row.price_list_rate = so_row.price_list_rate
+                row.base_price_list_rate = so_row.base_price_list_rate
+                row.discount_percentage = so_row.discount_percentage
+                row.discount_amount = so_row.discount_amount
+                row.rate = so_row.rate
+                row.price_list = so_row.price_list
+                row.pricing_rules = ""
 
-                        # Part 4
-                        cd = row.case_detail
-                        if cd and (case_dict.get(cd) == None):
-                            value_dict = {}
-                            value_dict['price_list_rate'] = row.price_list_rate
-                            value_dict['base_price_list_rate'] = row.base_price_list_rate
-                            value_dict['discount_percentage'] = row.discount_percentage
-                            value_dict['discount_amount'] = row.discount_amount
-                            value_dict['rate'] = row.rate
-                            value_dict['price_list'] = row.price_list
-                                
-                            case_dict[cd] = value_dict
+                # Section 4: Cache the Case Detail pricing
+                if row.case_detail and row.case_detail not in case_dict:
+                    case_dict[row.case_detail] = {
+                        'price_list_rate': row.price_list_rate,
+                        'base_price_list_rate': row.base_price_list_rate,
+                        'discount_percentage': row.discount_percentage,
+                        'discount_amount': row.discount_amount,
+                        'rate': row.rate,
+                        'price_list': row.price_list
+                    }
+                    
+            elif row.case_detail:
+                case_detail_rows_pending = True
 
-                        break
-            
-            if not row.so_detail:
-                if row.case_detail:
-                    case_detail_rows_pending = True
-
-    # Section 3b:
-    # Iterate through all rows of delivery_note again if there are any case_detail rows left to fill details of
-    if sales_order_exists and case_detail_rows_pending:
+    # Section 3b: Fallback Case Detail Pricing
+    if doc.get("sales_order") and case_detail_rows_pending:
         for row in doc.items:
             if row.case_detail and not row.so_detail:
                 cd_values = case_dict.get(row.case_detail)
                 if cd_values:
-                    row.price_list_rate = cd_values['price_list_rate']
-                    row.base_price_list_rate = cd_values['base_price_list_rate']
-                    row.discount_percentage = cd_values['discount_percentage']
-                    row.discount_amount = cd_values['discount_amount']
-                    row.rate = cd_values['rate']
-                    row.price_list = cd_values['price_list']
+                    for key, value in cd_values.items():
+                        row.set(key, value)
 
-    # Section 1 continuation:
-    # Iterate through all product bundles, convert 'batches' json to array - 'product_batches'
-    # Inside iteration, check if 'product_batches' is a subset of 'master_batches'
-    for row in doc.case_details:
-        enabled = frappe.get_value("Case Detail", row.name, "enabled")
-        if enabled:
-            bundle_batches_json_string = row.batches
-            bundle_batches = json.loads(bundle_batches_json_string)
-            missing_batches = set()
+    # Section 1 Continuation: Bundle Validation
+    for row in doc.get("case_details", []):
+        enabled = row.get("enabled") if hasattr(row, "enabled") else frappe.db.get_value("Case Detail", row.name, "enabled")
+        
+        if enabled and row.get("batches"):
+            try:
+                bundle_batches = json.loads(row.batches)
+                missing_batches = [b for b in bundle_batches if b not in master_batches]
 
-            for b in bundle_batches:
-                if b not in master_batches:
-                    missing_batches.add(b)
-
-            if len(missing_batches) != 0:
-                frappe.throw(_("Batches "+str(missing_batches)+" From Bundle "+str(row.case_detail)+" Not Present in Items Table"))
+                if missing_batches:
+                    frappe.throw(_(f"Batches {missing_batches} from Bundle {row.case_detail} are not present in the Items Table."))
+            except json.JSONDecodeError:
+                pass 
 
     doc.run_method("calculate_taxes_and_totals")
 

@@ -1,4 +1,3 @@
-
 from __future__ import unicode_literals
 
 import frappe
@@ -19,7 +18,7 @@ def before_validate(doc, method):
     for item in doc.items:
         if item.t_warehouse:
             total_incoming_qty += item.qty
-        elif item.s_warehouse:
+        if item.s_warehouse:
             total_outgoing_qty += item.qty
 
     # Set the total incoming and outgoing quantities in the Stock Entry document
@@ -47,8 +46,8 @@ def set_items_qty_to_batch_qty(doc):
 
             if batch_qty:
                 row.qty = float(batch_qty)
+                row.transfer_qty = row.qty * (row.conversion_factor or 1.0)
     
-
 
 def validate_disabled_batch(doc):
     for row in doc.items:

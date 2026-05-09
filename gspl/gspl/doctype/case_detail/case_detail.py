@@ -22,8 +22,8 @@ class CaseDetail(Document):
 
 		# ✅ ADDED: ensure same-batch, single-source, full-batch transfer into self.warehouse
 		# and update row.qty to the full batch qty (your requirement)
-		if self.enabled:
-			auto_transfer_full_batch_from_single_source(self)
+		# if self.enabled:
+		# 	auto_transfer_full_batch_from_single_source(self)
 
 		self.enable_disable_batch()
 		self.calculate_rate_and_qty()

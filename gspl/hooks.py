@@ -126,9 +126,10 @@ app_license = "GPL 3.0"
 # override_doctype_dashboards = {
 # 	"Task": "gspl.task.get_dashboard_data
 # }
+app_include_css = "/assets/gspl/css/v14_theme.css"
 
 doctype_js = {
-	'Delivery Note': 'public/js/delivery_note.js',
+	# 'Delivery Note': 'public/js/delivery_note.js',
 	'Sales Order': 'public/js/sales_order.js',
 	'Sales Invoice': 'public/js/sales_invoice.js',
 	'Stock Entry': 'public/js/stock_entry.js',
@@ -174,7 +175,7 @@ doc_events = {
 	},
 	"Delivery Note": {
 		"before_naming": "gspl.doc_events.delivery_note.before_naming",
-		"before_save": "gspl.doc_events.delivery_note.before_save",
+		# "before_save": "gspl.doc_events.delivery_note.before_save",
 		"on_submit": "gspl.doc_events.delivery_note.on_submit",
 		"on_cancel": "gspl.doc_events.delivery_note.on_cancel",
 		"validate": "gspl.doc_events.delivery_note.validate",

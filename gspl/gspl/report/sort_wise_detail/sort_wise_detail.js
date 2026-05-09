@@ -1,27 +1,28 @@
-// Copyright (c) 2023, GSPL and contributors
+// Copyright (c) 2026, GSPL
 // For license information, please see license.txt
 /* eslint-disable */
 
 frappe.query_reports["Sort Wise Detail"] = {
-	"filters": [
-		{
-			reqd: 1,
-			default: "",
-			options: "Item",
-			label: __("Item"),
-			fieldname: "item",
-			fieldtype: "Link",
-			// get_query: () => {
-			// 	return {
-			// 		filters: { "has_variants": 1 }
-			// 	}
-			// }
-		},
-		{
-			options: "Warehouse",
-			label: __("Warehouse"),
-			fieldname: "warehouse",
-			fieldtype: "Link",
-		},
-	]
+    "filters": [
+        {
+            "fieldname": "item",
+            "label": __("Sort Number"),
+            "fieldtype": "Link",
+            "options": "Item",
+            "reqd": 1,
+            "get_query": function() {
+                return {
+                    filters: {
+                        "has_variants": 1
+                    }
+                }
+            }
+        },
+        {
+            "fieldname": "warehouse",
+            "label": __("Warehouse"),
+            "fieldtype": "Link",
+            "options": "Warehouse"
+        }
+    ]
 };

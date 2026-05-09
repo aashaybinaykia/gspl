@@ -1,4 +1,3 @@
-
 from __future__ import unicode_literals
 
 import frappe
@@ -57,6 +56,7 @@ class CustomSalesInvoice(SalesInvoice):
             )
 
     def update_billing_status_in_dn(self, update_modified=True):
-        if self.is_return and self.reason_for_issuing_document == "02-Post Sale Discount":
+        # FIX: Using .get() prevents the AttributeError during background auto-creation
+        if self.is_return and self.get("reason_for_issuing_document") == "02-Post Sale Discount":
             return
         super().update_billing_status_in_dn(update_modified=update_modified)

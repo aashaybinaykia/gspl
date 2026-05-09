@@ -1,0 +1,21 @@
+/* Override Root Variables */
+:root, [data-theme="light"] {
+    --primary-color: #2490ef !important;
+    --btn-primary-bg: #2490ef !important;
+    --primary: #2490ef !important; 
+    --text-on-primary: #ffffff !important;
+}
+
+/* Force override the Primary Button classes */
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: #ffffff !important;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+    background-color: #1c75c8 !important; /* A slightly darker blue for hover */
+    border-color: #1c75c8 !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+}

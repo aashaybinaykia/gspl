@@ -1,27 +1,18 @@
 from __future__ import unicode_literals
-
 import frappe
 from frappe import _
-import requests
 from frappe.utils.csvutils import get_csv_content_from_google_sheets, read_csv_content
 
 def update_purchase_invoice_items(doc):
-    """
-    Update Purchase Invoice Items based on scan_case (Google Sheet Link).
-    Fetches Case Detail Items and applies Rates based on Case + Batch combinations.
-    """
-
     if not doc.scan_case:
         frappe.throw(_("Scan Case (Google Sheet Link) is required."))
 
-    # 1. **Extract Default Data from the First Row of Items Table**
     if not doc.items:
         frappe.throw(_("No items found in the Purchase Invoice."))
 
     first_item = doc.items[0]  
     default_data = {field: getattr(first_item, field) for field in first_item.as_dict().keys()}
 
-    # 2. **Fetch CSV Data from Google Sheets using Frappe Utility**
     try:
         content = get_csv_content_from_google_sheets(doc.scan_case)
         data = read_csv_content(content)  
@@ -31,9 +22,7 @@ def update_purchase_invoice_items(doc):
     if not data or len(data) < 2:
         frappe.throw(_("Google Sheet is empty or not formatted correctly."))
 
-    # 3. **Convert CSV Data into a Dictionary mapped by (Case, Batch)**
     keys = [str(k).strip().lower() for k in data[0]]  
-    
     case_col_name = "case no" if "case no" in keys else ("case detail" if "case detail" in keys else None)
     
     if not case_col_name or "batch" not in keys or "rate" not in keys:
@@ -64,11 +53,9 @@ def update_purchase_invoice_items(doc):
     if not batch_rate_data:
         frappe.throw(_("No valid Case, Batch, and Rate data found in Google Sheet."))
 
-    # 4. **Delete all existing rows in the Purchase Invoice Items table**
     doc.items = []
     doc.set("items", doc.items) 
 
-    # 5. **Fetch Case Detail Items & Rebuild Purchase Invoice Items Table**
     for case_number in cases_to_process:
         if not frappe.db.exists("Case Detail", case_number):
             frappe.throw(_("Case Detail {} not found").format(case_number))
@@ -85,29 +72,20 @@ def update_purchase_invoice_items(doc):
             if rate is None:
                 frappe.throw(_("Rate missing in Google Sheet for Case: {0}, Batch: {1}").format(case_number, item_batch))
 
-            new_item = default_data.copy()
-            
-            # --- FIX: Remove Frappe system fields to prevent Duplicate Primary Key Error ---
-            system_fields = ["name", "parent", "parenttype", "parentfield", "idx", "creation", "modified"]
-            for field in system_fields:
-                new_item.pop(field, None)
-
-# Fetch BOTH the actual item name and HSN code from the Item master
             item_details = frappe.db.get_value("Item", case_item.item_code, ["item_name", "gst_hsn_code"], as_dict=True)
             actual_item_name = item_details.item_name if item_details else case_item.item_code
             actual_hsn_code = item_details.gst_hsn_code if item_details else None
 
+            # Cleaned up redundancy here
             new_item = default_data.copy()
-            
-            # Remove Frappe system fields to prevent Duplicate Primary Key Error
             system_fields = ["name", "parent", "parenttype", "parentfield", "idx", "creation", "modified"]
             for field in system_fields:
                 new_item.pop(field, None)
 
             new_item.update({
                 "item_code": case_item.item_code,
-                "item_name": actual_item_name,           # <--- Fixed
-                "gst_hsn_code": actual_hsn_code,         # <--- Fixed
+                "item_name": actual_item_name,           
+                "gst_hsn_code": actual_hsn_code,         
                 "qty": -case_item.qty if doc.is_return else case_item.qty,  
                 "description": case_item.description,
                 "uom": case_item.uom,
@@ -119,9 +97,7 @@ def update_purchase_invoice_items(doc):
 
             doc.append("items", new_item)
 
-    # **Save & Validate Items**
     doc.set("items", doc.items)  
-
     frappe.msgprint(_("Purchase Invoice Items updated successfully based on Case and Batch rates."))
 
 @frappe.whitelist()
@@ -136,7 +112,8 @@ def before_validate(doc,method):
 @frappe.whitelist()
 def on_submit(doc, method):
     if doc.update_stock and not doc.is_return:
-        create_case_details(doc)
+        # THE FIX: Wait for stock ledger to commit before executing transfer logic
+        frappe.db.after_commit.add(lambda: create_case_details(doc))
     
 @frappe.whitelist()
 def before_cancel(doc, method):

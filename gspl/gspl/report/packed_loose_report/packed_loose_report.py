@@ -1,13 +1,9 @@
-# Copyright (c) 2023, GSPL and contributors
+# Copyright (c) 2026, GSPL
 # For license information, please see license.txt
 
 import frappe
 from frappe import _
-from frappe.utils import logger
-
-frappe.utils.logger.set_log_level("DEBUG")
-logger = frappe.logger("api", allow_site=True, file_count=5000)
-
+from frappe.utils import flt, cint
 
 def execute(filters=None):
     columns = [
@@ -48,7 +44,7 @@ def execute(filters=None):
             'fieldtype': 'Int',
             'width': 100
         },
-                {
+        {
             'label': 'Total Qty',
             'fieldname': 'total_qty',
             'fieldtype': 'Float',
@@ -78,254 +74,178 @@ def execute(filters=None):
     ]
 
     data = get_template_data(filters)
-
     return columns, data
 
 
 def get_template_data(filters):
-    item_filters = {
-        "has_variants": True,
-    }
+    filters = filters or {}
     
+    # --- 1. Base Item Filters ---
+    base_filters = {}
     if filters.get('brand'):
-        item_filters['brand'] = filters.get('brand')
-
-    
+        base_filters['brand'] = filters.get('brand')
     if filters.get('group'):
-        item_filters['item_group'] = filters.get('group')
+        base_filters['item_group'] = filters.get('group')
 
-    item_templates = frappe.get_all("Item", fields=["*"], filters=item_filters)
-    item_template_item_codes = list(map(lambda x: x.item_code, item_templates))
-    item_variants = frappe.get_all('Item',
-                                   filters={'variant_of': [
-                                       "in", item_template_item_codes]},
-                                   fields=['name', 'variant_of', 'attributes.attribute_value'],
-                                   order_by='attribute_value asc')
+    # --- 2. Fetch Templates & Standalones ---
+    template_filters = base_filters.copy()
+    template_filters['has_variants'] = 1
+    templates = frappe.get_all("Item", filters=template_filters, fields=["name", "item_name", "item_group"])
     
-    item_without_filters = {
-        "has_variants": False,
-        "variant_of": ''
+    standalone_filters = base_filters.copy()
+    standalone_filters['has_variants'] = 0
+    standalone_filters['variant_of'] = ["in", ["", None]]
+    standalones = frappe.get_all("Item", filters=standalone_filters, fields=["name", "item_name", "item_group"])
 
-    }
-    
-    if filters.get('brand'):
-        item_without_filters['brand'] = filters.get('brand')
+    all_parents = templates + standalones
+    parent_names = [d.name for d in all_parents]
 
-    
-    if filters.get('group'):
-        item_without_filters['item_group'] = filters.get('group')
+    if not parent_names:
+        return []
 
-    
-    
-    item_without_template = frappe.get_all('Item',
-                                        filters=item_without_filters,
-                                        fields=['name'])
-    
-    item_template_item_codes += list(map(lambda x: x.item_code, item_without_template))
-    
-    for item in item_without_template:
-        item['variant_of'] = item['name']
-        item['item_code'] = item['name']
-        item['attribute_value'] = 'NA'
+    # --- 3. Fetch Variants ---
+    variants = []
+    if templates:
+        template_names = [d.name for d in templates]
+        variants = frappe.get_all(
+            "Item",
+            filters={"variant_of": ["in", template_names]},
+            fields=["name", "variant_of", "attributes.attribute_value"],
+            order_by="attributes.attribute_value asc"
+        )
 
-    
-    item_variants += item_without_template
-    item_template_item_codes += list(map(lambda x: x.item_code, item_without_template))
+    # FIX: Wrap in frappe._dict so dot notation (v.name) works smoothly
+    for s in standalones:
+        variants.append(frappe._dict({
+            "name": s.name,
+            "variant_of": s.name,
+            "attribute_value": "NA"
+        }))
 
-    # logger.info("Item Without Templates: %s" % item_without_template)
-    # logger.info("Item item_variants Templates: %s" % item_variants)
+    variant_names = [v.name for v in variants]
+    if not variant_names:
+        return []
 
-    item_variant_names = list(map(lambda x: x.name, item_variants))
+    # --- 4. Fetch Active Batches (Safely via Query Builder) ---
+    min_qty = flt(filters.get('min_qty', 0))
+    max_qty = flt(filters.get('max_qty', 10000))
+    if max_qty <= min_qty:
+        max_qty = 10000
 
-    # Set default values for min_qty and max_qty
-    min_qty = 0
-    max_qty = 10000
-
-    # Update min_qty if provided in filters
-    if filters.get('min_qty'):
-        min_qty = filters.get('min_qty')
-
-    # Update max_qty if provided in filters and greater than min_qty
-    if filters.get('max_qty') and filters.get('max_qty') > 0:
-        max_qty = filters.get('max_qty')
-
-    # Construct the SQL query
-    query = """
-        SELECT
-            name, item, batch_qty, disabled
-        FROM
-            `tabBatch`
-        WHERE
-            batch_qty > %(min_qty)s
-            AND batch_qty < %(max_qty)s
-    """
-
-    # Add content filter if it exists
+    batch_table = frappe.qb.DocType("Batch")
+    query = (
+        frappe.qb.from_(batch_table)
+        .select(batch_table.item, batch_table.batch_qty, batch_table.disabled)
+        .where(batch_table.item.isin(variant_names))
+        .where(batch_table.batch_qty > min_qty)
+        .where(batch_table.batch_qty < max_qty)
+    )
     if filters.get('content'):
-        query += " AND content = %(content)s"
+        query = query.where(batch_table.content == filters.get('content'))
 
-    # Execute the SQL query
-    batches = frappe.db.sql(query, {
-        "min_qty": min_qty,
-        "max_qty": max_qty,
-        "content": filters.get('content')
-    }, as_dict=True)
+    batches = query.run(as_dict=True)
 
-
-
-    variants_dict = {}
-    for variant in item_variants:
-        variants_dict.setdefault(variant.variant_of, []).append(variant)
-
-    variant_batches_dict = {}
-    for batch in batches:
-        variant_batches_dict.setdefault(batch.item, {})
-        variant_batches_dict[batch.item].setdefault('batch_qty', batch.batch_qty)
-        variant_batches_dict[batch.item].setdefault('total_qty', 0.0)
-        variant_batches_dict[batch.item].setdefault('enabled_batches', [])
-        variant_batches_dict[batch.item].setdefault('disabled_batches', [])
-
-        variant_batches_dict[batch.item]['total_qty'] += batch.batch_qty
-
-        if batch.disabled:
-            variant_batches_dict[batch.item]['disabled_batches'].append(batch)
+    # Group Batches in Memory
+    batch_map = {}
+    for b in batches:
+        if b.item not in batch_map:
+            batch_map[b.item] = {'total_qty': 0.0, 'enabled': 0, 'disabled': 0}
+            
+        batch_map[b.item]['total_qty'] += flt(b.batch_qty)
+        if b.disabled:
+            batch_map[b.item]['disabled'] += 1
         else:
-            variant_batches_dict[batch.item]['enabled_batches'].append(batch)
+            batch_map[b.item]['enabled'] += 1
 
-    item_prices_cash = frappe.get_all(
-        'Item Price', filters={'item_code': ["in", item_template_item_codes], 'price_list': 'Cash'}, fields=['item_code', 'price_list_rate'], order_by='valid_from desc')
+    # --- 5. Fetch Prices (Unified Query) ---
+    prices = frappe.get_all(
+        "Item Price",
+        filters={
+            "item_code": ["in", parent_names],
+            "price_list": ["in", ["Cash", "Super Net", "No Less"]]
+        },
+        fields=["item_code", "price_list", "price_list_rate"],
+        order_by="valid_from desc"
+    )
 
-    item_prices_dict_cash = {}
-    for item_price in item_prices_cash:
-        item_prices_dict_cash.setdefault(
-            item_price.item_code, []).append(item_price)
+    price_map = {}
+    for p in prices:
+        if p.item_code not in price_map:
+            price_map[p.item_code] = {}
+        # Ordered desc, so first seen is latest
+        if p.price_list not in price_map[p.item_code]:
+            price_map[p.item_code][p.price_list] = flt(p.price_list_rate)
 
-
-
-    item_prices_sn = frappe.get_all(
-        'Item Price', filters={'item_code': ["in", item_template_item_codes], 'price_list': 'Super Net'}, fields=['item_code', 'price_list_rate'], order_by='valid_from desc')
-
-    item_prices_dict_sn = {}
-    for item_price in item_prices_sn:
-        item_prices_dict_sn.setdefault(
-            item_price.item_code, []).append(item_price)
-
-
-    item_prices_nl = frappe.get_all(
-        'Item Price', filters={'item_code': ["in", item_template_item_codes], 'price_list': 'No Less'}, fields=['item_code', 'price_list_rate'], order_by='valid_from desc')
-
-    item_prices_dict_nl = {}
-    for item_price in item_prices_nl:
-        item_prices_dict_nl.setdefault(
-            item_price.item_code, []).append(item_price)
+    # --- 6. Construct Final Data ---
+    variants_by_parent = {}
+    for v in variants:
+        variants_by_parent.setdefault(v.variant_of, []).append(v)
 
     template_data = []
+    grand_total_l_batches = 0
+    grand_total_p_batches = 0
+    grand_total_qty = 0.0
 
-    # logger.info("Total item templates: %s" % len(item_templates))
-    # logger.info("Total item_variants: %s" % len(item_variants))
-    # logger.info("Total batches: %s" % len(batches))
-    # logger.info("Total item_prices: %s" % len(item_prices))
+    for parent in all_parents:
+        parent_name = parent.name
+        vars_for_parent = variants_by_parent.get(parent_name, [])
 
-    
-    total_batches_l_f = 0
-    total_batches_p_f = 0
-    total_qty_f = 0
+        p_assortment = []
+        l_assortment = []
+        parent_total_qty = 0.0
+        parent_l_batches = 0
+        parent_p_batches = 0
 
-    item_templates += item_without_template
+        for v in vars_for_parent:
+            b_data = batch_map.get(v.name)
+            if not b_data:
+                continue
 
-    for item_template in item_templates:
-        template = item_template.item_code
-        variants = variants_dict.get(template, [])
+            attr_val = v.attribute_value or "NA"
+            parent_total_qty += b_data['total_qty']
+            
+            if b_data['enabled'] > 0:
+                parent_l_batches += b_data['enabled']
+                l_assortment.append(f"{attr_val}/{b_data['enabled']}")
+                
+            if b_data['disabled'] > 0:
+                parent_p_batches += b_data['disabled']
+                p_assortment.append(f"{attr_val}/{b_data['disabled']}")
 
-        # logger.info("Template: %s" % template)
-        # logger.info("Variants len: %s" % len(variants))
-
-        packed_assortment_p = {}
-        variant_batches_count_p = []
-        packed_assortment_l = {}
-        variant_batches_count_l = []
-        batch_qty = 0
-        total_qty = 0
-        total_batches_l = 0
-        total_batches_p = 0
-
-
-        for variant in variants:
-            attribute_value = variant.attribute_value
-            # batches = frappe.get_all('Batch', filters={'item': variant.name, 'batch_qty': [
-            #                          '>', 0], 'disabled': 1}, fields=['name'])
-
-            # variant_batches = list(filter(lambda batch: batch.item == variant.name, batches))
-            # enabled_batches = list(filter(lambda batch: batch.disabled == 0, variant_batches))
-            # disabled_batches = list(filter(lambda batch: batch.disabled == 1, variant_batches))
-            variant_batches = variant_batches_dict.get(variant.name, None)
-            if variant_batches is not None:
-                batch_qty += variant_batches['batch_qty']
-                total_qty +=  variant_batches['total_qty']
-                total_qty_f += variant_batches['total_qty']
-                enabled_batches = variant_batches['enabled_batches']
-                disabled_batches = variant_batches['disabled_batches']
-                enabled_batches_len = len(enabled_batches)
-                disabled_batches_len = len(disabled_batches)
-
-                if enabled_batches_len > 0:
-                    total_batches_l += enabled_batches_len
-                    total_batches_l_f += enabled_batches_len
-                    # packed_assortment_l[attribute_value] = enabled_batches_len
-
-                    variant_batches_count_l.append(
-                        str(attribute_value) + '/' + str(enabled_batches_len))
-                if disabled_batches_len > 0:
-                    total_batches_p += disabled_batches_len
-                    total_batches_p_f += disabled_batches_len
-                    variant_batches_count_p.append(
-                        str(attribute_value) + '/' + str(disabled_batches_len))
-                # packed_assortment_p[attribute_value] = disabled_batches_len
-
-        cash_rate = 0
-        sn_rate = 0
-        no_less_rate = 0
-        
-        item_price = item_prices_dict_cash.get(template, [])
-        if len(item_price):
-            cash_rate = item_price[0].price_list_rate
-
-
-        item_price = item_prices_dict_sn.get(template, [])
-        if len(item_price):
-            sn_rate = item_price[0].price_list_rate
-
-        item_price = item_prices_dict_nl.get(template, [])
-        if len(item_price):
-            no_less_rate = item_price[0].price_list_rate
-
-        if len(variant_batches_count_p) or len(variant_batches_count_l):
+        if parent_l_batches > 0 or parent_p_batches > 0:
+            p_rates = price_map.get(parent_name, {})
+            
             template_data.append({
-                'template': template,
-                'item_name': item_template.item_name,
-                'group': item_template.item_group,
-                'packed_assortment': ", ".join(variant_batches_count_p),
-                'loose_assortment': ", ".join(variant_batches_count_l),
-                'total_batches': total_batches_l + total_batches_p,
-                'total_qty': total_qty,
-                'cash_rate': cash_rate,
-                'sn_rate': sn_rate,
-                'no_less_rate': no_less_rate,
-                'batch_qty': batch_qty,
+                'template': parent_name,
+                'item_name': parent.item_name,
+                'group': parent.item_group,
+                'packed_assortment': ", ".join(p_assortment),
+                'loose_assortment': ", ".join(l_assortment),
+                'total_batches': parent_l_batches + parent_p_batches,
+                'total_qty': parent_total_qty,
+                'cash_rate': p_rates.get('Cash', 0.0),
+                'sn_rate': p_rates.get('Super Net', 0.0),
+                'no_less_rate': p_rates.get('No Less', 0.0),
+                'sort_qty': parent_total_qty # Hidden key for sorting
             })
+            
+            grand_total_l_batches += parent_l_batches
+            grand_total_p_batches += parent_p_batches
+            grand_total_qty += parent_total_qty
 
-    template_data = sorted(template_data, key=lambda x: x['batch_qty'], reverse=True)
+    # --- 7. Sort & Append Totals ---
+    template_data = sorted(template_data, key=lambda x: x['sort_qty'], reverse=True)
 
     template_data.append({
         'template': 'Total',
         'group': '',
-        'packed_assortment': total_batches_p_f,
-        'loose_assortment': total_batches_l_f,
-        'total_batches': total_batches_p_f + total_batches_l_f,
-        'cash_rate': 0,
-        'total_qty': total_qty_f,
+        'packed_assortment': str(grand_total_p_batches),
+        'loose_assortment': str(grand_total_l_batches),
+        'total_batches': grand_total_p_batches + grand_total_l_batches,
+        'cash_rate': 0.0,
+        'sn_rate': 0.0,
+        'no_less_rate': 0.0,
+        'total_qty': grand_total_qty,
     })
-
-    # logger.info("End of get_template_data")
 
     return template_data
