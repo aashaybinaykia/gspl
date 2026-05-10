@@ -19,16 +19,10 @@ class CaseDetailTransfer(Document):
 		se.posting_date = self.posting_date
 		se.posting_time = self.posting_time
 
-		# 1. Collect batches to toggle
-		batches_to_toggle = []
-
 		for row in self.items:
 			case_detail = frappe.get_doc("Case Detail", row.case_detail)
 
 			for item in case_detail.items:
-				if item.batch_no:
-					batches_to_toggle.append(item.batch_no)
-
 				se.append('items', {
 					'item_code': item.item_code,
 					's_warehouse': row.source_warehouse,
@@ -41,33 +35,17 @@ class CaseDetailTransfer(Document):
 				})
 
 		se.case_detail_transfer = self.name
-		
-		# Calculates transfer_qty and fetches UOMs before saving
 		se.set_missing_values()
 		
-		# Remove duplicate batch numbers from our list
-		batches_to_toggle = list(set(batches_to_toggle))
+		# Submit directly. No need for manual batch lock toggling.
+		se.save()
+		se.submit()
 
-		# 2. Enable the batches
-		for batch in batches_to_toggle:
-			frappe.db.set_value("Batch", batch, "disabled", 0)
+		for row in self.items:
+			self.update_case_detail_warehouse(row.case_detail, row.target_warehouse)
 
-		# 3. Attempt to save and submit the Stock Entry
-		try:
-			se.save()
-			se.submit()
-
-			for row in self.items:
-				self.update_case_detail_warehouse(row.case_detail, row.target_warehouse)
-
-			self.stock_entry = se.name
-			self.save()
-
-		# 4. ALWAYS disable the batches afterward, even if the submit fails
-		finally:
-			for batch in batches_to_toggle:
-				frappe.db.set_value("Batch", batch, "disabled", 1)
-
+		self.stock_entry = se.name
+		self.save()
 
 	def cancel_stock_entry(self):
 		se = frappe.get_doc("Stock Entry", self.stock_entry)

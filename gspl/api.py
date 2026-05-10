@@ -5,25 +5,11 @@ from frappe.utils import flt
 def process_custom_barcode(barcode, sales_order=None, company=None, customer=None):
     # 1. Resolve Barcode strictly as a Batch ID or Item Code
     batch_info = frappe.db.get_value("Batch", barcode, ["item", "name", "batch_qty"], as_dict=True)
-    batch_warehouse = None
     
     if batch_info:
         item_code = batch_info.item
         batch_no = batch_info.name
         batch_qty = batch_info.get("batch_qty") or 1 
-        
-        # PRIORITY 2: Find the warehouse where this batch actually exists right now
-        stock_wh = frappe.db.sql("""
-            SELECT warehouse 
-            FROM `tabStock Ledger Entry` 
-            WHERE batch_no = %s AND is_cancelled = 0
-            GROUP BY warehouse 
-            HAVING SUM(actual_qty) > 0
-            LIMIT 1
-        """, (batch_no,))
-        
-        if stock_wh:
-            batch_warehouse = stock_wh[0][0]
             
     else:
         if frappe.db.exists("Item", barcode):
@@ -47,7 +33,7 @@ def process_custom_barcode(barcode, sales_order=None, company=None, customer=Non
         )
 
         if so_item:
-            item_data = {
+            return {
                 "item_code": item_code, 
                 "batch_no": batch_no,
                 "qty": batch_qty, 
@@ -67,12 +53,6 @@ def process_custom_barcode(barcode, sales_order=None, company=None, customer=Non
                 "so_detail": so_item.name,
                 "is_from_so": True
             }
-            
-            # Attach the smart batch warehouse if we found one
-            if batch_warehouse:
-                item_data["batch_warehouse"] = batch_warehouse
-                
-            return item_data
 
     # 3. IF VALID ITEM/BATCH BUT NO SO ITEM FOUND: Trigger standard fallback
     return {"fallback_to_standard": True}

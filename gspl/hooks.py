@@ -135,6 +135,10 @@ doctype_js = {
 	'Stock Entry': 'public/js/stock_entry.js',
 }
 
+doctype_list_js = {
+	'Batch': 'public/js/batch_list.js'
+}
+
 override_whitelisted_methods = {
 	"erpnext.selling.page.point_of_sale.point_of_sale.search_for_serial_or_batch_or_barcode_number": "gspl.overrides.whitelisted.point_of_sale.search_for_serial_or_batch_or_barcode_number",
 	"erpnext.stock.doctype.batch.batch.get_batch_no": "gspl.overrides.whitelisted.batch.custom_get_batch_no",
@@ -148,7 +152,7 @@ override_doctype_class = {
 
 
 # TODO: Uncomment and test below fixtures for TASK-17
-fixtures = ["Custom Field", "Property Setter", "Client Script"]
+# fixtures = ["Custom Field", "Property Setter", "Client Script"]
 # fixtures = [
 # 	{
 # 		"dt": "Custom Field",
@@ -178,7 +182,10 @@ doc_events = {
 		# "before_save": "gspl.doc_events.delivery_note.before_save",
 		"on_submit": "gspl.doc_events.delivery_note.on_submit",
 		"on_cancel": "gspl.doc_events.delivery_note.on_cancel",
-		"validate": "gspl.doc_events.delivery_note.validate",
+		"validate": [
+			"gspl.doc_events.delivery_note.validate",
+			"gspl.doc_events.stock_validation.prevent_locked_batch_transfer"
+		],
 	},
 	"Item": {
 		"before_validate": "gspl.doc_events.item.before_validate",
@@ -187,11 +194,17 @@ doc_events = {
 		"before_save": "gspl.doc_events.item_price.before_save",
 	},
 	"Purchase Invoice": {
-		"validate": "gspl.doc_events.purchase_invoice.validate",
+		"validate": [
+			"gspl.doc_events.purchase_invoice.validate",
+			"gspl.doc_events.stock_validation.prevent_locked_batch_transfer"
+		],
 		"before_validate": "gspl.doc_events.purchase_invoice.before_validate",
 		"on_submit": "gspl.doc_events.purchase_invoice.on_submit",
 		"before_cancel": "gspl.doc_events.purchase_invoice.before_cancel",
 		"autoname": "gspl.doc_events.purchase_invoice.autoname"
+	},
+	"Purchase Receipt": {
+		"validate": "gspl.doc_events.stock_validation.prevent_locked_batch_transfer"
 	},
 	"Sales Order": {
 		"before_validate": "gspl.doc_events.sales_order.before_validate",
@@ -203,18 +216,23 @@ doc_events = {
 	"Sales Invoice": {
 		"autoname": "gspl.doc_events.sales_invoice.autoname",
 		"before_validate": "gspl.doc_events.sales_invoice.before_validate",
-		"validate": "gspl.doc_events.sales_invoice.validate",
+		"validate": [
+			"gspl.doc_events.sales_invoice.validate",
+			"gspl.doc_events.stock_validation.prevent_locked_batch_transfer"
+		],
 	},
 	"Stock Entry": {
 		"before_validate": "gspl.doc_events.stock_entry.before_validate",
 		"before_submit": "gspl.doc_events.stock_entry.before_submit",
 		"before_cancel": "gspl.doc_events.stock_entry.before_cancel",
+		"validate": "gspl.doc_events.stock_validation.prevent_locked_batch_transfer"
 	},
 	"Stock Ledger Entry": {
 		"validate": "gspl.doc_events.stock_ledger_entry.validate",
 		"on_submit": "gspl.doc_events.stock_ledger_entry.on_submit",
 	},
 }
+
 fixtures = [
     "Custom Field",
     "Property Setter",
